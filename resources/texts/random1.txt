@@ -1,0 +1,79 @@
+
+A Comprehensive History of Software Development: From Beginnings to Present
+
+    Post published:July 26, 2023
+    Reading time:13 mins read
+
+You are currently viewing A Comprehensive History of Software Development: From Beginnings to Present
+
+We have been using software extensively for the past 40 years, and it has become an integral part of our daily lives. It’s almost unimaginable that the term software engineering was coined only 60 years ago. The software development innovation that happened in those 50 years is worth hundreds of years in progress, though. This article explores the history of software development from the 1960s until the 2010s.
+
+What is Software?
+
+Everything you do on a computer, from installing the operating system (OS) to running other programs to playing games on a mobile device, all of these require the use of software. The best way to conceptualize software is as the medium through which people interact with computers. Most of us wouldn’t know how to use a computer if we didn’t have software. To put it simply, software talks to a computer in a language the computer understands so that the computer can complete tasks for the user that are either practical or entertaining.
+
+Before Software Engineering
+
+In 1948, a computer scientist named Tom Kilburn created the first-ever piece of software. Kilburn and his colleague Freddie Williams built the Manchester Small-Scale Experimental Machine (SSEM) and used it to run Kilburn’s program, which performed mathematical computations.
+
+Decades would pass after this landmark event before computers could be programmed with anything other than punch cards, with holes representing individual machine code instructions. In 1957, one of the first high-level programming languages, Fortran, was released to the public. John Tukey, a statistician, first used the term “software” in a magazine article he wrote the following year.
+
+The 60s: Software Engineering as a New Term
+
+Margaret Hamilton, a computer scientist and systems engineer, opened a new window in 1963/64 and coined the term “software engineering” while working on the guidance and navigation systems for the Apollo missions. According to Hamilton, programmers deserved the title “engineer.”
+
+Due to software’s inability to keep up with hardware developments, the “Software Crisis” first appeared in 1965. Software either went over budget, took too long to complete, had bugs that needed fixing, needed a lot of upkeep, or developers failed to finish developing it.
+
+Because of that, Nato held two software engineering conferences, each one year apart, to resolve the “Software Crisis.” They established guidelines for software development in these conferences.
+
+The 70s: The First PCs
+
+The First PCs
+
+Software engineers were still trying to fix the software and prevent further damage. New ideas, languages, and hardware were introduced in the 1970s, which sparked the rise of software engineering and further innovations in the field of software development.
+
+In 1970, Nicklaus Wirth designed Pascal, a structured programming and data-structuring language.
+
+In 1972, Dennis MacAlistair Ritchie created the C programming language. It eventually became one of the most widely used languages for computer programming. Unix, created by Ritchie and Ken Thompson, first appeared around this time as well. After he died in 2011, Ritchie was widely regarded as a pioneer in software development; his contributions can be recognized in nearly all modern software.
+
+In 1975, the first PCs got released to the world, mostly for business use rather than personal use. and in 1979, Seatle University introduced a new master’s degree in the branch of software engineering.
+
+The 80s: New Languages, Better Programming
+
+in 1980, the Ada programming language, which Jean Ichbiah was the first to design, made its debut appearance. In 1982, the first CASE (Computer-Aided Software Engineering) tools began to hit the market. These tools aim to speed up the development process and cut down on costs without sacrificing quality.
+
+Released in 1985, C++ is a general-purpose programming language that supports functional, generic, object-oriented, and procedural programming frameworks. The language, which has seen constant development since its inception, is currently the fourth most widely spoken worldwide. Bjane Strousop, a Dutch computer scientist, created and developed the language.
+
+In 1989, companies provided internet access for the first time, mainly for scientific and military use.
+
+The 90s: Rise of the World Wide Web
+
+Rise of the World Wide Web
+
+Tim Berners-Lee created the first web browser, called WorldWideWeb, in 1990. In addition, he develops the Hypertext Transfer Protocol (HTTP), the Hypertext Markup Language (HTML), and the first two web pages describing his creations. In the same year, the term Big Data, which was already used before, became even more common.
+
+Python, with its extensive standard library and emphasis on white space, quickly rose to prominence after its introduction in 1991 and is now one of the most widely used programming languages.
+
+Java, created by James Gosling, was first made available to the public in 1995. Since it could be written once and run anywhere, it quickly became the most widely used language. They intended to use the language to create software for interactive television, but the developers had to alter its implementation because its language was too complex for the medium.
+
+The object-oriented, just-in-time programming language JavaScript debuted in 1995. Most websites today use JavaScript to create interactive web pages for their users.
+
+In 1996, Rochester Institute of Technology offered the first four-year software engineering degree.
+
+In 1998, the U.S. Naval Postgraduate School established the first software engineering Ph.D. program.
+
+In 1999, Kent Beck introduced extreme programming, an agile software development method that can adapt to the users’ needs.
+
+The 00s: The Agile Manifesto
+
+The Agile Software Development Manifesto became public in 2001. It discussed Agile software development with an emphasis on cross-functional teams and customers working together to create a product.
+
+In 2001, Ken Schwaber and Mike Beedle introduced Scrum, an iterative and incremental framework for agile software development. Although the technique had been around since the 1990s, it only took off in the 2000s.
+
+The 2010s:
+
+In 2010, cloud computing became increasingly popular, ushering in a new era for software development and fueling a surge in the demand for SaaS. During the following years, unexpectedly, JavaScript became the language of choice for most new software engineers. Moreover, in those years, AI and big data took off to change the world as we know it.
+
+Final Words
+
+In this article, we barely scratched the surface, mentioning the main innovations in software development from the 1960s up until the 2010s. Had we included every single invention, it would have taken a voluminous book. As for the past four years, they would need another book of their own because software development is advancing at the speed of light. One of the greatest advancements is the no-code movement. It allows anyone to create software or perform functions without learning to code. A good example of a no-code platform is the nandbox app builder. It’s the only native app builder on the market, meaning you can create a fully native app in minutes without writing any code. Try it now!
