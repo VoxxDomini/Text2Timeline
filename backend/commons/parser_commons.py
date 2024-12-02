@@ -98,7 +98,6 @@ class ParserOutput(object):
         return self._years
 
     # list splicing is inclusive beginning non-inclusive end
-
     def get_current_page(self) -> List[TemporalEntity]:
         index = (self.current_page - 1) * self.page_size
         return self._content[index:index+self.page_size]

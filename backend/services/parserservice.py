@@ -1,6 +1,6 @@
 from math import log
 
-from backend.commons.parser_commons import ParserInput, ParserOutput
+from backend.commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 from backend.parsers.base import BaseParser
 from ..commons.t2t_logging import log_info
 
@@ -9,6 +9,8 @@ from ..parsers.flairparser import FlairParser
 from ..parsers.spacy import SpacyParser
 
 import threading
+import time
+
 
 class ParserService:
     _default_parsers = {}
@@ -39,6 +41,13 @@ class ParserService:
         parser2 = FlairParser()
         parser3 = SpacyParser()
 
+        settings: ParserSettings = ParserSettings()
+        settings.context_radius = 2
+
+        parser1.settings = settings
+        parser2.settings = settings
+        parser3.settings = settings
+
         self._default_parsers[parser1._PARSER_NAME] = parser1
         self._default_parsers[parser2._PARSER_NAME] = parser2
         self._default_parsers[parser3._PARSER_NAME] = parser3
@@ -50,8 +59,13 @@ class ParserService:
     def get_parser(self, parser_name: str) -> BaseParser:
         return self._default_parsers[parser_name]
 
-    def parse_with_selected(self, input: str, selected_parser: str) -> ParserOutput:
-        return self._default_parsers[selected_parser].parse(input)
+    def parse_with_selected(self, input: ParserInput, selected_parser: str) -> ParserOutput:
+        start_time = time.perf_counter()
+
+        output: ParserOutput =  self._default_parsers[selected_parser].accept(input)
+        output.elapsed_time = time.perf_counter() - start_time
+
+        return output
 
 
     def confirm_parsers_loaded(self):

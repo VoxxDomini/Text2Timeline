@@ -6,6 +6,10 @@
         {{ form.hidden_tag() }}
         <p>{{ form.text_area.label }}<br>{{ form.text_area() }}</p>
         <p>{{ form.file_upload.label }}<br>{{ form.file_upload() }}</p>
+        <div>
+          {{ form.parser_selection.label}}<br>
+          {{ form.parser_selection}}
+        </div>
         <p>{{ form.submit() }}</p>
     </form>
     {% with messages = get_flashed_messages(with_categories=true) %}

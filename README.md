@@ -8,7 +8,7 @@ If aiming to run the project locally please keep in mind that some of the langua
 
 ### Dependencies
 
-If installing with poetry, after getting all dependencies and creating the venv, make sure you've selected it by checking `poetry venv list` and then running:
+If installing with poetry (run poetry install in the foldder), after getting all dependencies and creating the venv, make sure you've selected it by checking `poetry venv list` and then running:
 
 ```
 poetry add boto3

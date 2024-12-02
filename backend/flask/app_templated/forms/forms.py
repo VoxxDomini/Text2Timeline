@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, TextAreaField, FileField
+from wtforms import SelectField, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, FileField
 from wtforms.validators import DataRequired, Optional
 
 class LoginForm(FlaskForm):
@@ -12,4 +12,5 @@ class LoginForm(FlaskForm):
 class TextOrFileForm(FlaskForm):
     text_area = TextAreaField('Text', validators=[Optional()])
     file_upload = FileField('Upload File', validators=[Optional()])
+    parser_selection = SelectField("Select a parser", choices=[])
     submit = SubmitField('Submit')
