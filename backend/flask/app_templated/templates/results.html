@@ -15,4 +15,8 @@
     {% for event in results.get_temporal_list() %}
         <p>{{event}}</p>
     {% endfor %}
+    <hr><hr>
+    {% for event in results.get_temporal_list_no_years() %}
+        <p>{{event}}</p>
+    {% endfor %}
 {% endblock %}

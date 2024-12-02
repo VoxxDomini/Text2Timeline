@@ -1,5 +1,7 @@
 from typing import List, Dict
-from ..commons.temporal import TemporalEntity
+
+from nltk.sem.logic import EntityType
+from ..commons.temporal import TemporalEntity, TemporalEntityType
 
 import re
 
@@ -44,13 +46,18 @@ class ParserInput():
 
 class ParserOutput(object):
 
-    def __init__(self, content: List[TemporalEntity]):
+    def __init__(self, content: List[TemporalEntity], contains_no_year_temporals : bool = False):
         self._content = content
         self.page_size = 20
         self.current_page = 1
         self.parser_name = ""
         self.elapsed_time: float
 
+        self._no_year_temporals = contains_no_year_temporals
+
+        if self._no_year_temporals:
+            self.prepare_non_year_temporals()
+        
         self.sort_asc()
 
     @property
@@ -96,6 +103,13 @@ class ParserOutput(object):
         self._years = years
 
         return self._years
+
+    def prepare_non_year_temporals(self) -> None:
+        data_yes_years = [i for i in self.content if i.entity_type == TemporalEntityType.WITH_YEAR]
+        data_no_years = [i for i in self.content if i.entity_type == TemporalEntityType.NO_YEAR]
+
+        self.content = data_yes_years
+        self.content_no_years = data_no_years
 
     # list splicing is inclusive beginning non-inclusive end
     def get_current_page(self) -> List[TemporalEntity]:

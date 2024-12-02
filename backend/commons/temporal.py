@@ -1,13 +1,24 @@
+from enum import Enum
 from typing import Any
 
 
+class TemporalEntityType(Enum):
+    WITH_YEAR = 1,
+    NO_YEAR = 2
+
 class TemporalEntity(object):
     def __init__(self):
+        self._order : int = -1
+        self._entity_type : TemporalEntityType = TemporalEntityType.WITH_YEAR
         self._event = ""
         self._year = ""
         self._date = ""
         self._context_before = ""
         self._context_after = ""
+
+        # Experimental, to be used for NO_YEAR types in an attempt to gather more context
+        self._year_before = ""
+        self._year_after = ""
 
     @property
     def event(self):
@@ -24,6 +35,22 @@ class TemporalEntity(object):
     @year.setter
     def year(self, y: str):
         self._year = y
+
+    @property
+    def entity_type(self):
+        return self._entity_type
+
+    @entity_type.setter
+    def entity_type(self, entity_type: TemporalEntityType):
+        self._entity_type = entity_type
+
+    @property
+    def order(self) -> int:
+        return self._order
+
+    @order.setter
+    def order(self, order: int):
+        self._order = order
 
     @property
     def date(self):
@@ -56,4 +83,9 @@ class TemporalEntity(object):
         return result
 
     def __str__(self):
-        return str(self._date) + " | " + str(self._year) + " :: " + str(self._event)
+        if self.entity_type == TemporalEntityType.WITH_YEAR:
+            return str(self._date) + " | " + str(self._year) + " :: " + str(self._event)
+        elif self.entity_type == TemporalEntityType.NO_YEAR:
+            return str(self._order) + " | " + str(self._year_before) + "|" + self.date + " :: " + str(self._event)
+        else:
+            return "MISSING IMPLEMENTATION FOR " + str(self.entity_type)

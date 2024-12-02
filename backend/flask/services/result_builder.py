@@ -17,5 +17,5 @@ class ResultBuilder():
     def build(self, parser_output: ParserOutput, renders: List[Render]) -> ResultPageModel:
         result : ResultPageModel = ResultPageModel()
         result.renders = renders
-        result.outputs = parser_output.get_current_page()
+        result.output = parser_output
         return result

@@ -99,6 +99,10 @@ class PlotlyRenderer(BaseRenderer):
         # Hide the event axis label
         fig.update_yaxes(showticklabels=False, showgrid=False)  # Hide the y-axis
 
+        fig.update_layout(
+            paper_bgcolor='rgba(84,84,84,255)',
+            plot_bgcolor='rgba(84,84,84,255)'
+        )
 
         self._fig = fig
         

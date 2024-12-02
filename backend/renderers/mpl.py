@@ -15,6 +15,7 @@ from ..commons.utils import get_export_file_path, join_folder_file_names
 
 import random
 from io import BytesIO
+from ..commons.t2t_logging import log_info
 
 class MPLRenderer(BaseRenderer):
     _RENDERER_NAME : str = "MPL"
@@ -73,6 +74,15 @@ class MPLRenderer(BaseRenderer):
                         xytext=(0, np.sign(l)*3), textcoords="offset points",
                         horizontalalignment="left",
                         verticalalignment="center" if l > 0 else "top")
+
+        # log_info("INTERVAL ERROR: " + str(dates))
+        # log_info("INTERVAL ERROR: " + str(years))
+        # log_info("INTERVAL ERROR: " + str(inter) + " from " + str(interval))
+
+        # Some weird error when dates are too close together
+        # instead of redoing the math, i'll do this!
+        if inter == 0:
+            inter = 1
 
         ax.xaxis.set_major_locator(mdates.YearLocator(inter))
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))

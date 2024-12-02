@@ -1,5 +1,6 @@
 
 
+from backend.commons.parser_commons import ParserOutput
 from backend.commons.temporal import TemporalEntity
 from backend.renderers.base_renderer import RendererOutputType
 from typing import List
@@ -14,7 +15,7 @@ class Render():
 
 class ResultPageModel():
     renders : List[Render] = []
-    outputs : List[TemporalEntity] = []
+    output : ParserOutput
 
     def __init__(self):
         pass
@@ -30,7 +31,14 @@ class ResultPageModel():
 
     def get_temporal_list(self):
         text = []
-        for t in self.outputs:
+        for t in self.output.get_current_page():
+            text.append(str(t))
+
+        return text
+
+    def get_temporal_list_no_years(self):
+        text = []
+        for t in self.output.content_no_years:
             text.append(str(t))
 
         return text

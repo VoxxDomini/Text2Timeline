@@ -5,7 +5,7 @@ from typing_extensions import override
 from typing import List, Tuple, Dict
 
 from .base import BaseParser
-from ..commons.temporal import TemporalEntity
+from ..commons.temporal import TemporalEntity, TemporalEntityType
 from ..commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 
 from ..commons.t2t_logging import log_info
@@ -38,13 +38,15 @@ class SpacyParser(BaseParser):
         
         tempora_entity_list = self.extract_temporals(spacy_document)
 
-        output: ParserOutput = ParserOutput(tempora_entity_list)
+        output: ParserOutput = ParserOutput(tempora_entity_list, contains_no_year_temporals=True)
         output.parser_name = self._PARSER_NAME
         return output
 
     def extract_temporals(self, spacy_document) -> List[TemporalEntity]:
         tempora_entity_list: List[TemporalEntity] = []
-        processed_events: List[str] = []
+        processed_events: List[str] = [] # hashset?
+        counter : int = 0
+        last_valid_year : str = ""
 
         for entity in spacy_document.ents:
             if entity.label_ in self._SPACY_TEMPORAL_TAGS:
@@ -54,15 +56,32 @@ class SpacyParser(BaseParser):
                 result_year = self.get_year(date)
                 temporal_value = self.format_year(result_year)
 
-                if temporal_value is not None and event not in processed_events:
+                if temporal_value is not None and event not in processed_events: # TODO probably should be a map for large contexts, iterating over the list sucks
                     processed_events.append(event) # temporary solution to duplicate events due to spacy document structure
 
                     temporal_entity: TemporalEntity = TemporalEntity()
                     temporal_entity.event = event
                     temporal_entity.date = date
                     temporal_entity.year = temporal_value
+                    temporal_entity.order = counter
                     self.populate_context(temporal_entity, entity.sent.start)
                     tempora_entity_list.append(temporal_entity)
+
+                    last_valid_year = temporal_value
+                elif event not in processed_events: 
+                    # experiment on fastest model to see how many non-year entities can be captured
+                    # and how they can be filtered
+                    # also consider giving them IDs and putting them in two separate lists as optimisation
+                    temporal_entity: TemporalEntity = TemporalEntity()
+                    temporal_entity.event = event
+                    temporal_entity.date = date
+                    temporal_entity.entity_type = TemporalEntityType.NO_YEAR
+                    temporal_entity.order = counter
+                    self.populate_context(temporal_entity, entity.sent.start)
+                    temporal_entity._year_before = last_valid_year
+                    tempora_entity_list.append(temporal_entity)
+
+                counter += 1
 
 
 
@@ -106,8 +125,8 @@ class SpacyParser(BaseParser):
                     year = 1
                 result_year = str(year)
 
-        
-        years = re.findall(r'(?<![\[])([0-9]{3,4})(?![\]])', date_text) # manually editted to remove false positives because of shittier model
+        # manually editted to remove false positives because of weaker model than the heavier/slower ones
+        years = re.findall(r'(?<![\[])([0-9]{3,4})(?![\]])', date_text) 
         
         if len(years) > 0:
             for y in years:
