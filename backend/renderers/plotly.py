@@ -11,6 +11,8 @@ from typing import List
 
 
 class PlotlyRenderer(BaseRenderer):
+    _RENDERER_NAME = "PLOTLY"
+    
     @override
     def accept(self, parser_output: ParserOutput):
         self._parser_output = parser_output

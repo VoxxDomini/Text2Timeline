@@ -56,5 +56,6 @@ docs/_build/
 
 pre-test.py
 spacy_test.ipynb
+*.ipynb
 
 backup/

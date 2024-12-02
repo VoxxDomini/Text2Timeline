@@ -1,7 +1,9 @@
+from math import log
 from backend.commons.parser_commons import ParserInput, ParserOutput
+from backend.flask.models.app_templated_models import ResultPageModel
 from backend.services import parserservice
 from . import app
-from . import parser_service
+from . import parser_service, render_service, result_builder
 from . import LoginForm, TextOrFileForm
 
 from ...commons.t2t_logging import log_info
@@ -52,8 +54,7 @@ def get_and_parse():
                 # Handle file upload
                 file = text_or_file_form.file_upload.data
 
-                log_info(file) # ? 
-
+                # log_info(file) 
                 # filename = secure_filename(file.filename)  werkzeug util, probably not necessary at this point
                 
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], file)
@@ -63,19 +64,26 @@ def get_and_parse():
                 
             selected_parser = text_or_file_form.parser_selection.data
             print("Parser selected from FE", selected_parser)
-            return redirect(url_for('parse', input_text=input_text, parser=selected_parser))
+            return parse(input_text, selected_parser)
     return render_template('input.html', form=text_or_file_form)
 
 
 @app.route('/parse')
-def parse():
-    input_text = str(request.args.get('input_text'))
+def parse(input_text, parser):
     parser_input: ParserInput = ParserInput(input_text)
+    output: ParserOutput = parser_service.parse_with_selected(parser_input, parser)
+    
 
-    output: ParserOutput = parser_service.parse_with_selected(parser_input, str(request.args.get("parser")))
-    current_page = output.get_current_page()
+    log_info("FROM FE: " + str(output))
 
-    return f"Processed text: {current_page[0]}"
+    # TODO remove hardcoded renderer later
+    render = render_service.render_with_selected("MPL", output)
+    render_list = []
+    render_list.append(render)
+
+    result_model : ResultPageModel = result_builder.build(output, render_list)
+
+    return render_template('results.html', results=result_model)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

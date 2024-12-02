@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% for imagebytes in results.get_image_bytes() %}
+        <img id="byte-image-{{loop.index}}" alt="noalt">
+        <script>
+            document.querySelector("#byte-image-{{loop.index}}").src = "data:image/png;base64, " + "{{imagebytes}}";
+        </script>
+    {% endfor %}
+    <hr>
+    {% for event in results.get_temporal_list() %}
+        <p>{{event}}</p>
+    {% endfor %}
+{% endblock %}

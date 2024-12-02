@@ -11,11 +11,14 @@ import numpy as np
 import matplotlib.dates as mdates
 import mplcursors
 
-from ..commons.utils import get_export_file_path
+from ..commons.utils import get_export_file_path, join_folder_file_names
 
 import random
+from io import BytesIO
 
 class MPLRenderer(BaseRenderer):
+    _RENDERER_NAME = "MPL"
+
     @override
     def accept(self, parser_output: ParserOutput):
         self._parser_output = parser_output
@@ -26,9 +29,19 @@ class MPLRenderer(BaseRenderer):
     def render(self):
         if self._output_type == RendererOutputType.LIBRARY_NATIVE:
             self._plot.show()
-        if self._output_type == RendererOutputType.EXPORT_IMAGE:
-            file_path = get_export_file_path(2, "timeline"+str(self._parser_output.current_page)+".png")
+        elif self._output_type == RendererOutputType.EXPORT_IMAGE_FILE:
+            if len(self.settings.EXPORT_IMAGE_FILE_PATH):
+                # TODO custom exceptions
+                raise ValueError("Attempting to save to file path with no path in renderer settings")
+
+            #file_path = get_export_file_path(2, "timeline"+str(self._parser_output.current_page)+".png")
+            file_path = join_folder_file_names(self.settings.EXPORT_IMAGE_FILE_PATH, "timeline"+str(self._parser_output.current_page)+".png")
             self._plot.savefig(file_path)
+        elif self._output_type == RendererOutputType.EXPORT_IMAGE_BYTES:
+            image_bytes = BytesIO()
+            self._plot.savefig(image_bytes, format="png", bbox_inches="tight")
+            self._plot.close()
+            return image_bytes
 
 
     def build_plot(self, temporal_entities: List[TemporalEntity]):
@@ -219,7 +232,7 @@ class MPLInteractiveRenderer(BaseRenderer):
     def render(self):
         if self._output_type == RendererOutputType.LIBRARY_NATIVE:
             self._plot.show()
-        if self._output_type == RendererOutputType.EXPORT_IMAGE:
+        if self._output_type == RendererOutputType.EXPORT_IMAGE_FILE:
             file_path = get_export_file_path(2, "timeline"+str(self._parser_output.current_page)+".png")
             self._plot.savefig(file_path)
 

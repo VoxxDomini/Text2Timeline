@@ -42,6 +42,8 @@ def get_export_file_path(nesting_level:int = 2, file_name: str = "NO_FILE_NAME_S
     file_path = os.path.join(folder_path, file_name)
     return file_path
 
+def join_folder_file_names(folder_name: str, file_name: str) -> str:
+    return os.path.join(folder_name, file_name)
 
 
 

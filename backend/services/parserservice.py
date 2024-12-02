@@ -1,5 +1,3 @@
-from math import log
-
 from backend.commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 from backend.parsers.base import BaseParser
 from ..commons.t2t_logging import log_info
