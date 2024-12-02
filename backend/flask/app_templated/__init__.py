@@ -6,9 +6,13 @@ from ...commons.t2t_logging import initialize_logging
 from .forms.forms import LoginForm, TextOrFileForm
 from ..services.result_builder import ResultBuilder
 
+import matplotlib.pyplot as plt
 
 import threading
 
+# Move this to somewhere else, rc params can be modified from anywhere
+plt.rcParams['axes.facecolor'] = '#adadad'
+plt.rcParams['figure.facecolor'] = '#adadad'
 
 initialize_logging()
 

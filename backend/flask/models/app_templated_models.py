@@ -34,3 +34,6 @@ class ResultPageModel():
             text.append(str(t))
 
         return text
+
+    def get_embedded_renders(self):
+        return [i.data for i in self.renders if i.type == RendererOutputType.EMBEDDED]

@@ -1,6 +1,7 @@
 from math import log
 from backend.commons.parser_commons import ParserInput, ParserOutput
-from backend.flask.models.app_templated_models import ResultPageModel
+from backend.flask.models.app_templated_models import Render, ResultPageModel
+from backend.renderers.base_renderer import RendererOutputType
 from backend.services import parserservice
 from . import app
 from . import parser_service, render_service, result_builder
@@ -68,18 +69,16 @@ def get_and_parse():
     return render_template('input.html', form=text_or_file_form)
 
 
-@app.route('/parse')
 def parse(input_text, parser):
+    # TODO move all this logic into Result Builder
+
     parser_input: ParserInput = ParserInput(input_text)
     output: ParserOutput = parser_service.parse_with_selected(parser_input, parser)
     
-
     log_info("FROM FE: " + str(output))
 
-    # TODO remove hardcoded renderer later
-    render = render_service.render_with_selected("MPL", output)
-    render_list = []
-    render_list.append(render)
+    # render = render_service.render_with_selected("MPL", output)
+    render_list = render_service.render_with_all(output)
 
     result_model : ResultPageModel = result_builder.build(output, render_list)
 

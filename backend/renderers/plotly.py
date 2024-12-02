@@ -11,7 +11,7 @@ from typing import List
 
 
 class PlotlyRenderer(BaseRenderer):
-    _RENDERER_NAME = "PLOTLY"
+    _RENDERER_NAME : str = "PLOTLY"
     
     @override
     def accept(self, parser_output: ParserOutput):

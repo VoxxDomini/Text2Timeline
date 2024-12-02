@@ -18,8 +18,8 @@ class RendererOutputType(Enum):
     LIBRARY_NATIVE = 1,
     EXPORT_IMAGE_FILE = 2,
     EXPORT_IMAGE_BYTES = 3,
-    EMBEDDED = 3,
-    ERROR_NOT_SET = 4
+    EMBEDDED = 4,
+    ERROR_NOT_SET = 5
 
 
 class BaseRenderer(ABC):

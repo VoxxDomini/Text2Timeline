@@ -8,6 +8,10 @@
         </script>
     {% endfor %}
     <hr>
+    {% for embedded in results.get_embedded_renders() %}
+        {{embedded | safe}}
+    {% endfor %}
+    <hr>
     {% for event in results.get_temporal_list() %}
         <p>{{event}}</p>
     {% endfor %}

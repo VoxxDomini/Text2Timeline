@@ -43,24 +43,36 @@ class RendererService():
     def get_renderer_names(self) -> List[str]:
         return list(self.renderers.keys())
 
-    def render_with_selected(self, renderer_selection: str, parser_output : ParserOutput):
+    def render_with_selected(self, renderer_selection: str, parser_output : ParserOutput) -> Render:
         renderer = self.get_renderer(renderer_selection)
         renderer.accept(parser_output)
         output = self.handle_output(renderer)
         return output
+
+    def render_with_all(self, parser_output: ParserOutput) -> List[Render]:
+        renders: List[Render] = []
+        for renderer_name in self.get_renderer_names():
+            instance = self.get_renderer(renderer_name)
+            instance.accept(parser_output)
+            renders.append(self.handle_output(instance))
+
+        return renders
 
     # This should be updated later to have more options
     # Split EXPORT_IMAGE to be able to use IO in per user folders
     # For now, images will be returned as IOBytes, and  Embedded will be returned as an HTML tag
     def handle_output(self, renderer : BaseRenderer) -> Render:
         render = Render(None, RendererOutputType.ERROR_NOT_SET)
-
         if renderer.output_type == RendererOutputType.EXPORT_IMAGE_BYTES:
             output : BytesIO = renderer.render()
             output.seek(0)
             # TODO the data pre-utf8 decode loooks nearly identical but doesnt work, investigate later
             render.data = base64.b64encode(output.getvalue()).decode("utf-8").replace("\n", "") # this might not be very optimal, check later
             render.type = RendererOutputType.EXPORT_IMAGE_BYTES
+        elif renderer.output_type == RendererOutputType.EMBEDDED:
+            # this should already be an embeddable string that can be inserted as an HTML tag
+            render.type = RendererOutputType.EMBEDDED
+            render.data = renderer.render()
             
         return render
 

@@ -17,7 +17,7 @@ import random
 from io import BytesIO
 
 class MPLRenderer(BaseRenderer):
-    _RENDERER_NAME = "MPL"
+    _RENDERER_NAME : str = "MPL"
 
     @override
     def accept(self, parser_output: ParserOutput):
