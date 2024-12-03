@@ -12,6 +12,13 @@ def log_info(message: str):
     logging.info(message)
 
 
+def log_decorated(message: str):
+    caller_name = get_caller_name()
+
+    message = f"{caller_name} -- {message}"
+    logging.info("****************************************************  " + message)
+
+
 def log_class_methods(classReference):
     log_info(str(classReference) + " :: " + str(dir(classReference)))
 

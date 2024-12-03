@@ -16,13 +16,16 @@ class PredictionWrapper(object):
         self.content = predicition
         self.sentence_index = index
 
+FLAIR_PARSER_NAME = "Flair"
+
 class FlairParser(BaseParser):
     _FLAIR_TEMPORAL_TAG: str = "DATE"
     _TEMPORAL_ERROR: str = "ERROR GETTING DATE/YEAR"
-    _PARSER_NAME: str = "Flair"
+    _PARSER_NAME: str = FLAIR_PARSER_NAME
 
     def __init__(self):
         self._settings = ParserSettings() # all default values
+        self.initialize()
 
     @property
     def settings(self):
@@ -39,7 +42,6 @@ class FlairParser(BaseParser):
 
         # keep inits barebones to potentially run in separate threads
         # move init out of here later, call it separately
-        self.initialize()
         self.init_document()
 
         wrapped_prediction_list = self.extract_temporals(self._sentences)

@@ -8,7 +8,6 @@ from ..services.result_builder import ResultBuilder
 
 import matplotlib.pyplot as plt
 
-import threading
 
 # Move this to somewhere else, rc params can be modified from anywhere
 plt.rcParams['axes.facecolor'] = '#adadad'
@@ -17,11 +16,8 @@ plt.rcParams['figure.facecolor'] = '#adadad'
 initialize_logging()
 
 parser_service = ParserService()
-parser_service.load_default_parsers()
-parser_service.init_parsers_async()
-parser_service.confirm_parsers_loaded()
-            
-
+# parser_service.load_default_parsers()
+#parser_service.confirm_parsers_loaded()
 render_service = RendererService()
 result_builder = ResultBuilder()
 

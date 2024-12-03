@@ -13,29 +13,13 @@ from flask import render_template, flash, redirect, url_for, request
 
 import os
 
-@app.route('/')
-@app.route('/index')
-def index():
-    user = {'username': 'Miguel'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    return render_template('index.html', title='Home', user=user, posts=posts)
-
 
 @app.route('/parsers')
 def get_parsers():
     return parser_service.get_parser_names()
 
 
-@app.route('/input', methods=['GET', 'POST'])
+@app.route('/get_and_parse', methods=['GET', 'POST'])
 def get_and_parse():
     text_or_file_form = TextOrFileForm()
     text_or_file_form.parser_selection.choices = [(p,p) for p in parser_service.get_parser_names()]
@@ -93,3 +77,21 @@ def login():
             login_form.username.data, login_form.remember_me.data))
         return redirect(url_for("index"))
     return render_template('login.html', title='Sign In', form=login_form)
+
+
+@app.route('/')
+@app.route('/index')
+def index():
+    user = {'username': 'Miguel'}
+    posts = [
+        {
+            'author': {'username': 'John'},
+            'body': 'Beautiful day in Portland!'
+        },
+        {
+            'author': {'username': 'Susan'},
+            'body': 'The Avengers movie was so cool!'
+        }
+    ]
+    # return render_template('index.html', title='Home', user=user, posts=posts)
+    return redirect(url_for("get_and_parse"))

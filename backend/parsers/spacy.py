@@ -11,14 +11,16 @@ from ..commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 from ..commons.t2t_logging import log_info
 
 
+SPACY_PARSER_NAME = "spaCy"
 
 class SpacyParser(BaseParser):
     _SPACY_TEMPORAL_TAGS: List[str] = ["DATE", "TIME"]
     _TEMPORAL_ERROR: str = "ERROR GETTING DATE/YEAR"
-    _PARSER_NAME: str = "spaCy"
+    _PARSER_NAME: str = SPACY_PARSER_NAME
 
     def __init__(self):
         self._settings = ParserSettings() # all default values
+        self.initialize()
 
     @property
     def settings(self):
@@ -33,7 +35,6 @@ class SpacyParser(BaseParser):
         self.input = input
         tempora_entity_list: List[TemporalEntity] = []
 
-        self.initialize()
         spacy_document = self.init_document()
         
         tempora_entity_list = self.extract_temporals(spacy_document)

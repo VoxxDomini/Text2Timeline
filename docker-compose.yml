@@ -1,0 +1,7 @@
+services:
+  text2timeline:
+    build: .
+    ports:
+      - "5001:5000"
+  redis:
+    image: "redis:alpine"

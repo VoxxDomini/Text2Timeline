@@ -17,15 +17,16 @@ class PredictionWrapper(object):
         self.content = predicition
         self.corpus_index = corpus_index
 
-
+ALLENNLP_PARSER_NAME = "allen_nlp"
 
 class AllennlpParser(BaseParser):
     ALLENNLP_TEMPORAL_TAG = "ARGM-TMP"
     NO_DATE_DETECTED = "ERROR_NO_DATE"
-    _PARSER_NAME = "allen_nlp"
+    _PARSER_NAME = ALLENNLP_PARSER_NAME
 
     def __init__(self):
         self._settings = ParserSettings() # all default values
+        self.initialize()
 
     @property
     def settings(self):
@@ -41,10 +42,6 @@ class AllennlpParser(BaseParser):
 
         # currently this parsers needs to receive sentence-tokenized input
         self.input.tokenize()
-        
-
-        self.initialize()
-
 
         predictions = self.get_allennlp_predictions()
 
@@ -63,7 +60,6 @@ class AllennlpParser(BaseParser):
 
     def get_allennlp_predictions(self) -> list:
         predictions = []
-        print(self.input.get_content())
         for corpus_index, part in enumerate(self.input.get_content()):
             predictions.append(PredictionWrapper(self.predictor.predict(part), corpus_index))  # type: ignore
 

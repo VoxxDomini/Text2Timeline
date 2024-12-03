@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "text2timeline"
-version = "0.1.0"
+version = "0.5.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Isi"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
