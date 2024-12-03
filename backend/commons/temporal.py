@@ -86,6 +86,6 @@ class TemporalEntity(object):
         if self.entity_type == TemporalEntityType.WITH_YEAR:
             return str(self._date) + " | " + str(self._year) + " :: " + str(self._event)
         elif self.entity_type == TemporalEntityType.NO_YEAR:
-            return str(self._order) + " | " + str(self._year_before) + "|" + self.date + " :: " + str(self._event)
+            return str(self._order) + " | " + str(self._year_before) + "|" + self.date + " :: (" + self.context_before + ") " + str(self._event)
         else:
             return "MISSING IMPLEMENTATION FOR " + str(self.entity_type)

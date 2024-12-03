@@ -7,7 +7,7 @@ from . import app
 from . import parser_service, render_service, result_builder
 from . import LoginForm, TextOrFileForm
 
-from ...commons.t2t_logging import log_info
+from ...commons.t2t_logging import log_class_methods, log_info
 
 from flask import render_template, flash, redirect, url_for, request
 
@@ -41,7 +41,6 @@ def get_and_parse():
     text_or_file_form.parser_selection.choices = [(p,p) for p in parser_service.get_parser_names()]
 
     if text_or_file_form.validate_on_submit():
-        # Ensure only one input is provided
         if not text_or_file_form.text_area.data and not text_or_file_form.file_upload.data:
             flash("Please provide either text or a file.", "error")
         elif text_or_file_form.text_area.data and text_or_file_form.file_upload.data:
@@ -49,22 +48,26 @@ def get_and_parse():
         else:
             selected_parser = "ERROR_NOT_SET"
             if text_or_file_form.text_area.data:
-                # Handle text area input
+                # Text area input
                 input_text = text_or_file_form.text_area.data
             else:
-                # Handle file upload
+                # Uploaded input
                 file = text_or_file_form.file_upload.data
 
-                # log_info(file) 
-                # filename = secure_filename(file.filename)  werkzeug util, probably not necessary at this point
-                
+                # TODO add option to keep user uploads
+                # Example:
+                """
+                filename = secure_filename(file.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], file)
                 file.save(filepath)
+
                 with open(filepath, 'r') as f:
                     input_text = f.read()
+
+                """
+                input_text = file.read().decode("utf-8")
                 
             selected_parser = text_or_file_form.parser_selection.data
-            print("Parser selected from FE", selected_parser)
             return parse(input_text, selected_parser)
     return render_template('input.html', form=text_or_file_form)
 
@@ -74,8 +77,6 @@ def parse(input_text, parser):
 
     parser_input: ParserInput = ParserInput(input_text)
     output: ParserOutput = parser_service.parse_with_selected(parser_input, parser)
-    
-    log_info("FROM FE: " + str(output))
 
     # render = render_service.render_with_selected("MPL", output)
     render_list = render_service.render_with_all(output)

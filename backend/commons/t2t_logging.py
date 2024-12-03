@@ -12,6 +12,10 @@ def log_info(message: str):
     logging.info(message)
 
 
+def log_class_methods(classReference):
+    log_info(str(classReference) + " :: " + str(dir(classReference)))
+
+
 def initialize_logging() -> None:
     logging.basicConfig(
         level=logging.DEBUG,

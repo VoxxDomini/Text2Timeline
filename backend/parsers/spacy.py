@@ -69,9 +69,6 @@ class SpacyParser(BaseParser):
 
                     last_valid_year = temporal_value
                 elif event not in processed_events: 
-                    # experiment on fastest model to see how many non-year entities can be captured
-                    # and how they can be filtered
-                    # also consider giving them IDs and putting them in two separate lists as optimisation
                     temporal_entity: TemporalEntity = TemporalEntity()
                     temporal_entity.event = event
                     temporal_entity.date = date
@@ -118,7 +115,7 @@ class SpacyParser(BaseParser):
         result_year:str = self._TEMPORAL_ERROR
 
         if "century" in date_text:
-            year = re.search('([1-9]{1,2})', date_text)
+            year = re.search('([0-9]{1,2})', date_text)
             if year is not None:
                 year = (int(year.group(1)) -1) * 100
                 if year == 0:

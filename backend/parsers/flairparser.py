@@ -6,7 +6,7 @@ from typing_extensions import override
 from typing import List, Tuple, Dict
 
 from .base import BaseParser
-from ..commons.temporal import TemporalEntity
+from ..commons.temporal import TemporalEntity, TemporalEntityType
 from ..commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 
 import re
@@ -47,14 +47,16 @@ class FlairParser(BaseParser):
         temporal_entity_list: List[TemporalEntity] = []
         temporal_entity_list = self.populate_context(wrapped_prediction_list)    
 
-        output: ParserOutput = ParserOutput(temporal_entity_list)
+        output: ParserOutput = ParserOutput(temporal_entity_list,  contains_no_year_temporals=True)
         output.parser_name = self._PARSER_NAME
         return output
 
     def extract_temporals(self, spacy_document) -> List[PredictionWrapper]:
         wrapped: List[PredictionWrapper] = []
         processed_events: List[str] = []
-        
+        order = 1
+        last_valid_year : str = ""
+
         for sentence_index, sentence in enumerate(self._sentences): # type: ignore
             for entity in sentence.get_spans("ner"): # type:ignore
                 if entity.tag == self._FLAIR_TEMPORAL_TAG:
@@ -73,6 +75,19 @@ class FlairParser(BaseParser):
                         temporal_entity.event = event
                         temporal_entity.date = date
                         temporal_entity.year = temporal_value
+                        temporal_entity.order = order
+                        order += 1
+                        last_valid_year = temporal_value
+                        wrap = PredictionWrapper(temporal_entity, sentence_index)
+                        wrapped.append(wrap)
+                    elif event not in processed_events:
+                        temporal_entity: TemporalEntity = TemporalEntity()
+                        temporal_entity.event = event
+                        temporal_entity.date = date
+                        temporal_entity.order = order
+                        temporal_entity._year_before = last_valid_year
+                        temporal_entity.entity_type = TemporalEntityType.NO_YEAR
+                        order += 1
                         wrap = PredictionWrapper(temporal_entity, sentence_index)
                         wrapped.append(wrap)
 
@@ -115,7 +130,7 @@ class FlairParser(BaseParser):
         result_year:str = self._TEMPORAL_ERROR
 
         if "century" in date_text:
-            year = re.search('([1-9]{1,2})', date_text)
+            year = re.search('([0-9]{1,2})', date_text)
             if year is not None:
                 year = (int(year.group(1)) -1) * 100
                 if year == 0:
