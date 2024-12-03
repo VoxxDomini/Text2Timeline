@@ -1,0 +1,104 @@
+body {
+    font-family: "Fira Code", monospace;
+    font-optical-sizing: auto;
+    background-color: #1e1e1e;
+    color: #c9d1d9;
+    padding: 20px;
+}
+
+.row-entry,
+.content {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: rgb(34 39 46);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    color: #c9d1d9;
+}
+
+.row-entry:hover {
+    background-color: rgba(255, 99, 71, 0.6);
+}
+
+.image-bytes-container {
+    width: 100%;
+    overflow-x: scroll;
+}
+
+.content {
+    text-align: center;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    border: 1px solid transparent;
+    width: 100%;
+    padding: 0px;
+    display: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.content.active {
+    height: 150px;
+    /* Change the height as you desire mr.Isi */
+    opacity: 1;
+    /* Fully visible */
+    height: 150px;
+    display: flex;
+}
+
+.content span:nth-child(even) {
+    background-color:#57ab5a;
+}
+
+.content span:nth-child(odd) {
+    background-color: dodgerblue;
+}
+
+.content span {
+    text-align: center;
+    flex: 1;
+    border-right: 1px solid #ccc;
+    padding: 0 10px;
+    width:100%;
+    height:100%;
+}
+
+.content span:last-child {
+    border-right: none;
+    /* Super cool trick to remove the last border */
+}
+
+.order {
+    background-color: #f0ab00;
+    color: #000;
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.temporal {
+    background-color: #2d88c5;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.year {
+    background-color: #57ab5a;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.event {
+    flex-grow: 1;
+}
+
+.left-context,
+.right-context {
+    color: #8b949e;
+}

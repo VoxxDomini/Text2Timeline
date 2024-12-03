@@ -62,7 +62,6 @@ def parse(input_text, parser):
     parser_input: ParserInput = ParserInput(input_text)
     output: ParserOutput = parser_service.parse_with_selected(parser_input, parser)
 
-    # render = render_service.render_with_selected("MPL", output)
     render_list = render_service.render_with_all(output)
 
     result_model : ResultPageModel = result_builder.build(output, render_list)

@@ -1,22 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="image-bytes-container">
     {% for imagebytes in results.get_image_bytes() %}
-        <img id="byte-image-{{loop.index}}" alt="noalt">
-        <script>
-            document.querySelector("#byte-image-{{loop.index}}").src = "data:image/png;base64, " + "{{imagebytes}}";
-        </script>
+    <img id="byte-image-{{loop.index}}" alt="noalt">
+    <script>
+        document.querySelector("#byte-image-{{loop.index}}").src = "data:image/png;base64, " + "{{imagebytes}}";
+    </script>
     {% endfor %}
-    <hr>
+</div>
+<hr>
+<div class="embedded-images-container">
     {% for embedded in results.get_embedded_renders() %}
-        {{embedded | safe}}
+    {{embedded | safe}}
     {% endfor %}
-    <hr>
-    {% for event in results.get_temporal_list() %}
-        <p>{{event}}</p>
-    {% endfor %}
-    <hr><hr>
-    {% for event in results.get_temporal_list_no_years() %}
-        <p>{{event}}</p>
-    {% endfor %}
+</div>
+<hr>
+<div class="row-entry">
+    <span class="order"> Order in which the text was encountered while parsing </span>
+    <span class="temporal"> What flagged the sentence as temporal </span>
+    <span class="year"> The year, if present in the sentence, or the last mentioned year </span>
+</div>
+<div class="row-container"></div>
+{% for event in results.get_temporal_list() %}
+<div class="row-entry">
+    <span class="order"> {{event.order}} </span>
+    <span class="temporal"> {{event.date}} </span>
+    <span class="year"> {{event.year}} </span>
+    <span class="event"> {{event.event}} </span>
+</div>
+<div class="content">
+    <span> {{event.context_before}}</span>
+    <span> {{event.event}} </span>
+    <span> {{event.context_after}} </span>
+</div>
+{% endfor %}
+<hr>
+<hr>
+{% for event in results.get_temporal_list_no_years() %}
+<div class="row-entry">
+    <span class="order"> {{event.order}} </span>
+    <span class="temporal"> {{event.date}} </span>
+    <span class="year"> {{event._year_before}} </span>
+    <span class="event"> {{event.event}} </span>
+</div>
+<div class="content">
+    <span> {{event.context_before}}</span>
+    <span> {{event.event}} </span>
+    <span> {{event.context_after}} </span>
+</div>
+{% endfor %}
+</div>
+<script>
+    let schema = document.getElementsByClassName("row-entry");
+    Array.from(schema).forEach((el) => {
+        el.addEventListener("click", function () {
+            this.nextElementSibling.classList.toggle("active");
+        });
+    });
+</script>
 {% endblock %}

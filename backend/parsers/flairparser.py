@@ -1,9 +1,10 @@
+from ast import Set
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from segtok.segmenter import split_single
 
 from typing_extensions import override
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 
 from .base import BaseParser
 from ..commons.temporal import TemporalEntity, TemporalEntityType
@@ -55,7 +56,7 @@ class FlairParser(BaseParser):
 
     def extract_temporals(self, spacy_document) -> List[PredictionWrapper]:
         wrapped: List[PredictionWrapper] = []
-        processed_events: List[str] = []
+        processed_events: Set = set()
         order = 1
         last_valid_year : str = ""
 
@@ -71,7 +72,7 @@ class FlairParser(BaseParser):
 
 
                     if temporal_value is not None and event not in processed_events:
-                        # processed_events.append(event) # temporary solution to duplicate events due to spacy document structure
+                        processed_events.add(event)
 
                         temporal_entity: TemporalEntity = TemporalEntity()
                         temporal_entity.event = event
@@ -83,6 +84,7 @@ class FlairParser(BaseParser):
                         wrap = PredictionWrapper(temporal_entity, sentence_index)
                         wrapped.append(wrap)
                     elif event not in processed_events:
+                        processed_events.add(event)
                         temporal_entity: TemporalEntity = TemporalEntity()
                         temporal_entity.event = event
                         temporal_entity.date = date

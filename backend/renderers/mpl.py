@@ -41,7 +41,10 @@ class MPLRenderer(BaseRenderer):
         elif self._output_type == RendererOutputType.EXPORT_IMAGE_BYTES:
             image_bytes = BytesIO()
             self._plot.savefig(image_bytes, format="png", bbox_inches="tight")
+            self._plot.figure().clear()
             self._plot.close()
+            self._plot.cla()
+            self._plot.clf()
             return image_bytes
 
 
@@ -93,7 +96,11 @@ class MPLRenderer(BaseRenderer):
         ax.spines[["left", "top", "right"]].set_visible(False)
 
         ax.margins(y=0.1)
-        f = zoom_factory(ax)
+
+        # This should only be available in the interactive version
+        # Causes some weird threading issues when generating images
+        # TODO move later
+        # f = zoom_factory(ax)
 
         self._plot = plt
 

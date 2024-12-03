@@ -1,8 +1,9 @@
+from ast import Set
 import spacy
 import re
 
 from typing_extensions import override
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 
 from .base import BaseParser
 from ..commons.temporal import TemporalEntity, TemporalEntityType
@@ -45,7 +46,7 @@ class SpacyParser(BaseParser):
 
     def extract_temporals(self, spacy_document) -> List[TemporalEntity]:
         tempora_entity_list: List[TemporalEntity] = []
-        processed_events: List[str] = [] # hashset?
+        processed_events: Set = set() 
         counter : int = 0
         last_valid_year : str = ""
 
@@ -58,7 +59,7 @@ class SpacyParser(BaseParser):
                 temporal_value = self.format_year(result_year)
 
                 if temporal_value is not None and event not in processed_events: # TODO probably should be a map for large contexts, iterating over the list sucks
-                    processed_events.append(event) # temporary solution to duplicate events due to spacy document structure
+                    processed_events.add(event) # temporary solution to duplicate events due to spacy document structure
 
                     temporal_entity: TemporalEntity = TemporalEntity()
                     temporal_entity.event = event
@@ -69,7 +70,8 @@ class SpacyParser(BaseParser):
                     tempora_entity_list.append(temporal_entity)
 
                     last_valid_year = temporal_value
-                elif event not in processed_events: 
+                elif event not in processed_events:
+                    processed_events.add(event)
                     temporal_entity: TemporalEntity = TemporalEntity()
                     temporal_entity.event = event
                     temporal_entity.date = date

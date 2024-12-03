@@ -29,19 +29,11 @@ class ResultPageModel():
 
         return bytes
 
-    def get_temporal_list(self):
-        text = []
-        for t in self.output.get_current_page():
-            text.append(str(t))
+    def get_temporal_list(self) -> List[TemporalEntity]:
+        return self.output.get_current_page()
 
-        return text
-
-    def get_temporal_list_no_years(self):
-        text = []
-        for t in self.output.content_no_years:
-            text.append(str(t))
-
-        return text
+    def get_temporal_list_no_years(self) -> List[TemporalEntity]:
+        return self.output.content_no_years # TODO add pagination to this
 
     def get_embedded_renders(self):
         return [i.data for i in self.renders if i.type == RendererOutputType.EMBEDDED]
