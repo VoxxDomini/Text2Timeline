@@ -1,4 +1,5 @@
 from flask import Flask
+import matplotlib
 from .config import Config
 from ...services.parserservice import ParserService
 from ...services.renderservice import RendererService
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 
 
 # Move this to somewhere else, rc params can be modified from anywhere
+matplotlib.use('agg')
 plt.rcParams['axes.facecolor'] = '#adadad'
 plt.rcParams['figure.facecolor'] = '#adadad'
 

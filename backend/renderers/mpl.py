@@ -41,10 +41,7 @@ class MPLRenderer(BaseRenderer):
         elif self._output_type == RendererOutputType.EXPORT_IMAGE_BYTES:
             image_bytes = BytesIO()
             self._plot.savefig(image_bytes, format="png", bbox_inches="tight")
-            self._plot.figure().clear()
             self._plot.close()
-            self._plot.cla()
-            self._plot.clf()
             return image_bytes
 
 

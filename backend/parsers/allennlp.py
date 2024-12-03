@@ -8,6 +8,7 @@ from typing_extensions import override
 from ..commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 from ..commons.utils import word_list_to_string, disable_logging, log_decorator
 from ..commons.temporal import TemporalEntity, TemporalEntityType
+from ..commons.t2t_logging import log_error
 
 import re
 
@@ -37,18 +38,28 @@ class AllennlpParser(BaseParser):
         self._settings = settings
 
     @override
-    def accept(self, input: ParserInput) -> ParserOutput:
+    def accept(self, input: ParserInput, contains_no_year_temporals=True, batch_mode=False, batch_offset=-1) -> ParserOutput:
         self.input = input
+        self._contains_no_year_temporals = contains_no_year_temporals and not batch_mode
+        self._batch_mode = batch_mode
+        self._batch_offset = batch_offset
 
-        # currently this parsers needs to receive sentence-tokenized input
-        self.input.tokenize()
+        intermediate_outputs = not batch_mode
+
+        if self._batch_mode:
+            self.validate_batch_mode()
+
+        # See which tokenization is better, per batch or total
+        if not batch_mode:
+            self.input.tokenize()
+
 
         predictions = self.get_allennlp_predictions()
 
 
         tempora_entity_list = self.extract_temporal_parts(predictions)
 
-        output = ParserOutput(tempora_entity_list, contains_no_year_temporals=True)
+        output = ParserOutput(tempora_entity_list, contains_no_year_temporals=self._contains_no_year_temporals, finalizeOnInit=intermediate_outputs)
         output.parser_name = self._PARSER_NAME
         return output
 
@@ -57,6 +68,10 @@ class AllennlpParser(BaseParser):
     def initialize(self):
         self.predictor = load_predictor("structured-prediction-srl-bert")
 
+    def validate_batch_mode(self) -> None:
+        if self._batch_offset == -1:
+            log_error("Parser batch mode turned on but no batch information set")
+            raise ValueError("NO BATCH INFORMATION SET IN PARSER")
 
     def get_allennlp_predictions(self) -> list:
         predictions = []
@@ -70,6 +85,10 @@ class AllennlpParser(BaseParser):
         last_valid_year : str = ""
         counter = 0
 
+        if self._batch_mode:
+            counter += self._batch_offset + 1
+
+        
         for prediction_wrapper in predictions:
             unwrapped: dict = prediction_wrapper.content # type: ignore
 

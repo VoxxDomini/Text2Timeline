@@ -1,6 +1,8 @@
 from typing import List, Dict
 
 from nltk.sem.logic import EntityType
+
+from backend.commons.t2t_logging import log_decorated, log_error, log_info
 from ..commons.temporal import TemporalEntity, TemporalEntityType
 
 import re
@@ -20,12 +22,14 @@ class ParserSettings(object):
 
 import nltk
 
+# TODO check whether this being here is more efficient as opposed to only in the class 
+tokenizer = nltk.data.load('nltk:tokenizers/punkt/english.pickle')
+
 class ParserInput():
-    _tokenizer = nltk.data.load('nltk:tokenizers/punkt/english.pickle')
+    _tokenizer = tokenizer
 
     def __init__(self, content):
         self._content = content
-        self._raw = content
 
     def tokenize(self):
         self._content = self._tokenizer.tokenize(self._content) # type: ignore
@@ -41,12 +45,34 @@ class ParserInput():
         # parsers should use this in case some mandatory preprocessing has to be added
         return self._content
 
+    def get_in_batches(self, batch_size):
+        batches = []
+        total_items = len(self._content)
+        
+        for i in range(0, total_items, batch_size):
+            batches.append(ParserInput(self._content[i:i+batch_size]))
+        
+        if len(batches) > 1 and len(batches[-1]._content) < batch_size:
+            last_batch = batches.pop()  
+            batches[-1]._content += last_batch._content  
+        
+        log_decorated(f"Batching size: {batch_size} / {total_items} resulting in {len(batches)} batches")
+        return batches
+
+    def get_in_batches_by_percentage(self, percentage):
+        if not (0 < percentage <= 100):
+            raise ValueError("Percentage must be between 0 and 100")
+
+        total_items = len(self._content)
+        batch_size = max(1, int((percentage / 100) * total_items))
+        return self.get_in_batches(batch_size)
+
 
 
 
 class ParserOutput(object):
 
-    def __init__(self, content: List[TemporalEntity], contains_no_year_temporals : bool = False):
+    def __init__(self, content: List[TemporalEntity], contains_no_year_temporals : bool = False, batch_mode=False, finalizeOnInit=True):
         self._content = content
         self.page_size = 20
         self.current_page = 1
@@ -54,19 +80,66 @@ class ParserOutput(object):
         self.elapsed_time: float
 
         self._no_year_temporals = contains_no_year_temporals
+        self._batch_mode = batch_mode
+        self._finalized = False
+        self._last_batch_max_order = 0
 
-        if self._no_year_temporals:
+        """
+            Many of these are for backwards compatibility with dumbed-down versions of the parser, which should also
+            still support the previous ways they worked in (no non-year temporals, no batching)
+            keeping it in in case I want to add a config file to compare the modes later
+
+            The ParserOuput defaults represent the bare minimum functionality of running the parsers, as should the defaults
+            in the parsers themselves
+        """
+        if finalizeOnInit:
+            self.finalize_after_init()
+
+    def finalize_after_init(self):
+        if self._no_year_temporals and self._batch_mode == False:
             self.prepare_non_year_temporals()
         
-        self.sort_asc()
+        if self._batch_mode == False:
+            self.sort_asc()
 
     @property
     def content(self) -> List[TemporalEntity]:
+        if self._batch_mode == True and self._finalized == False:
+            log_error("Batch mode content is locked until output is finalized")
+            return []
         return self._content
 
     @content.setter
     def content(self, content: List[TemporalEntity]):
         self._content = content
+
+    def append_content(self, new_output) -> None:
+        '''
+            The idea behind this is that with batching turned on, any final operations should be run
+            once all content has been added
+        '''
+        if self._batch_mode == False:
+            log_error("Attempting to change parser output with batching turned off")
+            return
+
+        if new_output == None or len(new_output.content) == 0:
+            log_decorated(str(new_output))
+            #log_info("Null output appended in batch mode, exiting")
+            return
+
+        new_content = new_output.content
+        log_decorated("Appending content with length "+str(len(new_content)))
+        self._last_batch_max_order = new_content[-1].order
+        self._content.extend(new_content)
+
+    def finalize(self) -> None:
+        self._finalized = True
+
+        if self._no_year_temporals:
+            self.prepare_non_year_temporals()
+
+        self.sort_asc()
+        
 
     def __len__(self):
         return len(self._content)

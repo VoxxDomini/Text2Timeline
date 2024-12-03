@@ -9,7 +9,7 @@ from .base import BaseParser
 from ..commons.temporal import TemporalEntity, TemporalEntityType
 from ..commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 
-from ..commons.t2t_logging import log_info
+from ..commons.t2t_logging import log_error, log_info
 
 
 SPACY_PARSER_NAME = "spaCy"
@@ -32,23 +32,44 @@ class SpacyParser(BaseParser):
         self._settings = settings
 
     @override
-    def accept(self, input: ParserInput) -> ParserOutput:
+    def accept(self, input: ParserInput, contains_no_year_temporals=True, batch_mode=False, batch_offset=-1) -> ParserOutput:
         self.input = input
+        self._contains_no_year_temporals = contains_no_year_temporals and not batch_mode
+        self._batch_mode = batch_mode
+        self._batch_offset = batch_offset
+
+        # Don't do any post processing after ParseOuput is instanciated
+        # as the ouput will be appended to another output as part of the batching process
+        intermediate_outputs = not batch_mode
+
+        if self._batch_mode:
+            self.validate_batch_mode()
+
         tempora_entity_list: List[TemporalEntity] = []
 
         spacy_document = self.init_document()
         
         tempora_entity_list = self.extract_temporals(spacy_document)
 
-        output: ParserOutput = ParserOutput(tempora_entity_list, contains_no_year_temporals=True)
+        output: ParserOutput = ParserOutput(tempora_entity_list, contains_no_year_temporals=self._contains_no_year_temporals, finalizeOnInit=intermediate_outputs)
         output.parser_name = self._PARSER_NAME
+
+        self.teardown_and_cleanup()
         return output
+
+    def validate_batch_mode(self) -> None:
+        if self._batch_offset == -1:
+            log_error("Parser batch mode turned on but no batch information set")
+            raise ValueError("NO BATCH INFORMATION SET IN PARSER")
 
     def extract_temporals(self, spacy_document) -> List[TemporalEntity]:
         tempora_entity_list: List[TemporalEntity] = []
         processed_events: Set = set() 
         counter : int = 0
         last_valid_year : str = ""
+
+        if self._batch_mode:
+            counter += self._batch_offset + 1
 
         for entity in spacy_document.ents:
             if entity.label_ in self._SPACY_TEMPORAL_TAGS:
@@ -58,8 +79,8 @@ class SpacyParser(BaseParser):
                 result_year = self.get_year(date)
                 temporal_value = self.format_year(result_year)
 
-                if temporal_value is not None and event not in processed_events: # TODO probably should be a map for large contexts, iterating over the list sucks
-                    processed_events.add(event) # temporary solution to duplicate events due to spacy document structure
+                if temporal_value is not None and event not in processed_events:
+                    processed_events.add(event) 
 
                     temporal_entity: TemporalEntity = TemporalEntity()
                     temporal_entity.event = event
@@ -141,6 +162,12 @@ class SpacyParser(BaseParser):
     def initialize(self):
         self._nlp = spacy.load("en_core_web_sm")
         
+    def teardown_and_cleanup(self) -> None:
+        try:
+            del self._sentences
+            del self._sentence_start_to_index_map
+        except:
+            pass
 
     def init_document(self):
         document = self._nlp(self.input.get_content()) # expects non-tokenized text

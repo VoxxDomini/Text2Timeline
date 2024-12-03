@@ -7,7 +7,7 @@ from . import app
 from . import parser_service, render_service, result_builder
 from . import LoginForm, TextOrFileForm
 
-from ...commons.t2t_logging import log_class_methods, log_info
+from ...commons.t2t_logging import log_class_methods, log_decorated, log_info
 
 from flask import render_template, flash, redirect, url_for, request
 
@@ -57,15 +57,16 @@ def get_and_parse():
 
 
 def parse(input_text, parser):
-    # TODO move all this logic into Result Builder
+    # Will leave the service references here
+    # and pass them forward because I am unsure
+    # how python lifecycles work, refactor later
 
-    parser_input: ParserInput = ParserInput(input_text)
-    output: ParserOutput = parser_service.parse_with_selected(parser_input, parser)
-
-    render_list = render_service.render_with_all(output)
-
-    result_model : ResultPageModel = result_builder.build(output, render_list)
-
+    # result_model_old : ResultPageModel = result_builder.build_no_batching(ParserInput(input_text), parser, parser_service, render_service)
+    # result_model : ResultPageModel = result_builder.build_with_batching(ParserInput(input_text), parser, parser_service, render_service, batch_size=200)
+    # log_decorated("COMPARISON non-batching:" + str(result_model_old.output.elapsed_time) + " VS batching: " + str(result_model.output.elapsed_time))
+    
+    result_model : ResultPageModel = result_builder.build_no_batching(ParserInput(input_text), parser, parser_service, render_service)
+    
     return render_template('results.html', results=result_model)
 
 @app.route('/login', methods=['GET', 'POST'])
