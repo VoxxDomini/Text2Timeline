@@ -75,7 +75,7 @@ class ParserOutput(object):
     def __init__(self, content: List[TemporalEntity], contains_no_year_temporals : bool = False, batch_mode=False, finalizeOnInit=True):
         self._content = content
         self.page_size = 20
-        self.current_page = 1
+        self.current_page = 0
         self.parser_name = ""
         self.elapsed_time: float
 
@@ -83,6 +83,11 @@ class ParserOutput(object):
         self._batch_mode = batch_mode
         self._finalized = False
         self._last_batch_max_order = 0
+
+        # for adding extras
+        self._year_number_map = None
+        self._year_entity_map = None
+        self._years = None
 
         """
             Many of these are for backwards compatibility with dumbed-down versions of the parser, which should also
@@ -101,6 +106,18 @@ class ParserOutput(object):
         
         if self._batch_mode == False:
             self.sort_asc()
+
+    def get_content_paginated(self, page_size: int) -> List[List[TemporalEntity]]:
+        old_page_size = self.page_size
+        self.page_size = page_size
+        self.current_page = 1
+        
+        pages : List[List[TemporalEntity]] = []
+        while self.current_page_exists():
+            pages.append(self.get_and_turn_page())
+
+        self.page_size = old_page_size
+        return pages
 
     @property
     def content(self) -> List[TemporalEntity]:
@@ -152,30 +169,44 @@ class ParserOutput(object):
 
         return result
 
-    def year_map(self) -> Dict[int, List[TemporalEntity]]:
-        if self._year_map is not None:
-            return self._year_map
+    def year_entity_map(self) -> Dict[int, List[TemporalEntity]]:
+        if self._year_entity_map is not None:
+            return self._year_entity_map
 
-        year_map = {}
+        year_entity_map = {}
         for temporal_entity in self.content:
-            if temporal_entity.year not in year_map:
-                year_map[temporal_entity.year] = []
+            if temporal_entity.year not in year_entity_map:
+                year_entity_map[temporal_entity.year] = []
 
-            year_map[temporal_entity.year].append(temporal_entity)
+            year_entity_map[temporal_entity.year].append(temporal_entity)
         
-        self._year_map = year_map
-        return self._year_map
+        self._year_entity_map = year_entity_map
+        return self._year_entity_map
 
     def years(self) -> List[int]:
         if self._years is not None:
             return self._years
 
-        year_map = self.year_map()
+        year_map = self.year_entity_map()
         years: List[int] = list(year_map.keys())
         years = sorted(years)
         self._years = years
 
         return self._years
+
+    def year_number_map(self) -> Dict[int,int]:
+        if self._year_number_map is not None:
+            return self._year_number_map
+
+        year_number_map = {}
+        for temporal_entity in self.content:
+            if temporal_entity.year not in year_number_map:
+                year_number_map[temporal_entity.year] = 1
+
+            year_number_map[temporal_entity.year] += 1
+        
+        self._year_number_map = year_number_map
+        return self._year_number_map
 
     def prepare_non_year_temporals(self) -> None:
         data_yes_years = [i for i in self.content if i.entity_type == TemporalEntityType.WITH_YEAR]
@@ -186,17 +217,23 @@ class ParserOutput(object):
 
     # list splicing is inclusive beginning non-inclusive end
     def get_current_page(self) -> List[TemporalEntity]:
-        index = (self.current_page - 1) * self.page_size
+        index = self.current_page * self.page_size
         return self._content[index:index+self.page_size]
 
-    def next_page(self) -> List[TemporalEntity]:
-        if self.current_page * self.page_size >= len(self.content):
-            self.current_page = 0
-
+    def get_and_turn_page(self) -> List[TemporalEntity]:
         current_page = self.get_current_page()
         self.current_page += 1
 
         return current_page
+
+    def reset_page(self) -> None:
+        self.current_page = 0
+
+    def current_page_exists(self) -> bool:
+        if (self.current_page) * self.page_size >= len(self.content):
+            return False
+        
+        return True
 
     def has_next_page(self) -> bool:
         if (self.current_page + 1) * self.page_size >= len(self.content):

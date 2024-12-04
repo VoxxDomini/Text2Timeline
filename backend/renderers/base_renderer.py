@@ -4,6 +4,8 @@ from enum import Enum
 
 from typing import List
 
+from backend.commons.t2t_enums import RendererPaginationSetting
+
 from ..commons.parser_commons import ParserOutput
 
 
@@ -24,8 +26,9 @@ class RendererOutputType(Enum):
 
 class BaseRenderer(ABC):
 
+    # Typing is brea
     @abstractmethod
-    def accept(self, parser_output: ParserOutput):
+    def accept(self, parser_output: ParserOutput, pagination_setting : RendererPaginationSetting=RendererPaginationSetting.PAGES):
 
         raise NotImplemented
 

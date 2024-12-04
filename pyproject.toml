@@ -17,6 +17,7 @@ flair = "^0.13.1"
 scipy = "1.12"
 flask = "^3.0.3"
 flask-wtf = "^1.2.1"
+seaborn = "^0.13.2"
 
 
 [tool.poetry.group.dev.dependencies]

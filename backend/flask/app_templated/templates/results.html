@@ -1,13 +1,49 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="image-bytes-container">
-    {% for imagebytes in results.get_image_bytes() %}
-    <img id="byte-image-{{loop.index}}" alt="noalt">
+<div class="gallery-container" id="gallery-container">
+    {% for imagebytes in results.get_gallery() %}
+    <img id="gallery-image-{{loop.index}}" class="gallery-image">
     <script>
-        document.querySelector("#byte-image-{{loop.index}}").src = "data:image/png;base64, " + "{{imagebytes}}";
+        image = document.querySelector("#gallery-image-{{loop.index}}")
+        image.src = "data:image/png;base64, " + "{{imagebytes}}";
     </script>
     {% endfor %}
+    <script>
+        container = document.querySelector("#gallery-container")
+
+        let mouseDown = false;
+        let startX, scrollLeft;
+
+        const startDragging = (e) => {
+            mouseDown = true;
+            startX = e.pageX - container.offsetLeft;
+            scrollLeft = container.scrollLeft;
+        }
+
+        const stopDragging = (e) => {
+            mouseDown = false;
+        }
+
+        const toggleDragging = (e) => {
+            if (!mouseDown) {
+                startDragging(e);
+            } else {
+                mouseDown = false;
+            }
+        }
+
+        const move = (e) => {
+            e.preventDefault();
+            if (!mouseDown) { return; }
+            const x = e.pageX - container.offsetLeft;
+            const scroll = x - startX;
+            container.scrollLeft = scrollLeft - scroll;
+        }
+
+        container.addEventListener('mousemove', move, false);
+        container.addEventListener('mousedown', toggleDragging, false);
+    </script>
 </div>
 <hr>
 <div class="embedded-images-container">
@@ -59,4 +95,5 @@
         });
     });
 </script>
+
 {% endblock %}

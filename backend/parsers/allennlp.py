@@ -114,6 +114,7 @@ class AllennlpParser(BaseParser):
                         temporal_entity._year_before = last_valid_year
                         self.append_context(temporal_entity, prediction_wrapper.corpus_index) # type: ignore
                         temporal_entity_list.append(temporal_entity)
+                        break
 
 
 

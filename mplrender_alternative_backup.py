@@ -1,5 +1,4 @@
 from hashlib import new
-from backend.commons.t2t_enums import RendererPaginationSetting
 from backend.commons.temporal import TemporalEntity
 from .base_renderer import BaseRenderer, RendererSettings, RendererOutputType
 from ..commons.parser_commons import ParserOutput
@@ -26,13 +25,9 @@ class MPLRenderer(BaseRenderer):
     _MAX_LINE_LENGTH = 60
 
     @override
-    def accept(self, parser_output: ParserOutput, pagination_setting:RendererPaginationSetting=RendererPaginationSetting.PAGES):
+    def accept(self, parser_output: ParserOutput):
         self._parser_output = parser_output
-
-        if pagination_setting == RendererPaginationSetting.PAGES:
-            self.build_plot(self._parser_output.get_current_page())
-        elif pagination_setting == RendererPaginationSetting.SINGLE_IMAGE:
-            self.build_plot(self._parser_output.content)
+        self.build_plot(self._parser_output.get_current_page())
 
     def __init__(self) -> None:
         super().__init__()
@@ -72,42 +67,38 @@ class MPLRenderer(BaseRenderer):
 
         names, dates = zip(*((name, date) for name, date in zip(names, dates) if int(date.year) > inter))
 
-        levels = self.generate_levels(len(dates), 10, 30)
+        levels = self.generate_levels(dates, 10, 30)
     
-        fig, ax = plt.subplots(figsize=(70, 10))
 
-        ax.vlines(dates, 0, levels, color="tab:red")  # The vertical stems.
+        fig, ax = plt.subplots(figsize=(50, 10))
+
+        ax.vlines(dates, 0, levels, color="tab:red")  # vertical
 
         ax.plot(dates, np.zeros_like(dates), "-o",
-                color="k", markerfacecolor="w")  # Baseline and markers on it.
+                color="k", markerfacecolor="w")  
 
-        # annotate lines
-        last_top = None
-        last_bot = None
-        min_date_gap = int(interval / 12)
+        top_offset = 0
+        bot_offset = 0
+        last_offset_at_level = {}
 
-        for d, l, r in zip(dates, levels, names):
-            h_align = "left"
+        for i, (d, l, r) in enumerate(zip(dates, levels, names)):
+            selected_offset = 0
+            if l > 0:
+                selected_offset = top_offset
+                top_offset = self.toggle_offset(selected_offset)
+            else:
+                selected_offset = bot_offset
+                bot_offset = self.toggle_offset(selected_offset)
 
-            last = last_top if l > 1 else last_bot
-            
-            dif = 1000
-
-            if last is not None:
-                dif = abs(int((last-d).days/365))
-
-            if last is not None and  dif <= min_date_gap:
-                h_align = "right"
+            if l in last_offset_at_level and last_offset_at_level[l] == selected_offset:
+                selected_offset = self.toggle_offset(selected_offset)
 
             ax.annotate(r, xy=(d, l),
                         xytext=(0, np.sign(l)*3), textcoords="offset points",
-                        horizontalalignment=h_align,
+                        horizontalalignment="left" if selected_offset == 0 else "right",
                         verticalalignment="center" if l > 0 else "top")
 
-            if l > 1:
-                last_top = d
-            else:
-                last_bot = d
+            last_offset_at_level[l] = selected_offset
 
         # log_info("INTERVAL ERROR: " + str(dates))
         # log_info("INTERVAL ERROR: " + str(years))
@@ -139,7 +130,7 @@ class MPLRenderer(BaseRenderer):
     def render_next_page(self):
         plt.clf()
         plt.close()
-        self.build_plot(self._parser_output.get_and_turn_page())
+        self.build_plot(self._parser_output.next_page())
         self.render()
 
     @override
@@ -194,21 +185,14 @@ class MPLRenderer(BaseRenderer):
         else:
             return text
 
-    def generate_levels(self, numberOfDates, numberOfLevels, levelRange):
+    def generate_levels(self, dates, numberOfLevels, levelRange):
         level_values = []
-        step = 5
-        current = 2
+        numberOfDates = len(dates)
 
         for i in range(numberOfLevels):
-            new_level = current
+            new_level = random.randrange(2,levelRange,2)
             level_values.append(new_level)
             level_values.append((new_level*-1))
-            current += step
-            if current >= levelRange:
-                current = 2
-            """ new_level = random.randrange(2,levelRange,2)
-            level_values.append(new_level)
-            level_values.append((new_level*-1)) """
 
         levels = np.tile(level_values,
                         int(np.ceil(numberOfDates/len(level_values))))[:numberOfDates]
@@ -302,7 +286,7 @@ def zoom_factory(ax, base_scale=2.):
 
 class MPLInteractiveRenderer(BaseRenderer):
     @override
-    def accept(self, parser_output: ParserOutput, pagination_setting : RendererPaginationSetting = RendererPaginationSetting.PAGES):
+    def accept(self, parser_output: ParserOutput):
         self._parser_output = parser_output
         self.build_plot(self._parser_output.get_current_page())
                 
@@ -346,7 +330,7 @@ class MPLInteractiveRenderer(BaseRenderer):
     def render_next_page(self):
         plt.clf()
         plt.close()
-        self.build_plot(self._parser_output.get_and_turn_page())
+        self.build_plot(self._parser_output.next_page())
         self.render()
 
     @override

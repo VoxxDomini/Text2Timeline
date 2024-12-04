@@ -3,6 +3,7 @@ import io
 from base64 import b64encode
 from typing_extensions import override
 
+from backend.commons.t2t_enums import RendererPaginationSetting
 from backend.commons.temporal import TemporalEntity
 
 from .base_renderer import BaseRenderer, RendererOutputType, RendererSettings
@@ -14,7 +15,7 @@ class PlotlyRenderer(BaseRenderer):
     _RENDERER_NAME : str = "PLOTLY"
     
     @override
-    def accept(self, parser_output: ParserOutput):
+    def accept(self, parser_output: ParserOutput, pagination_setting:RendererPaginationSetting = RendererPaginationSetting.PAGES):
         self._parser_output = parser_output
         self.build_plot(self._parser_output.get_current_page())
 
@@ -46,12 +47,12 @@ class PlotlyRenderer(BaseRenderer):
 
     @override
     def render_next_page(self):
-        self.build_plot(self._parser_output.next_page())
+        self.build_plot(self._parser_output.get_and_turn_page())
         self.render()
 
     @override
     def render_pages(self):
-        while self._parser_output.has_next_page():
+        while self._parser_output.current_page_exists():
             self.render_next_page()
 
 

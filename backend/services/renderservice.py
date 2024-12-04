@@ -3,6 +3,7 @@ import re
 
 from typing import List, Callable, Type
 from backend.commons.parser_commons import ParserInput, ParserOutput, ParserSettings
+from backend.commons.t2t_enums import DEFAULT_RENDERER_MPL, DEFAULT_RENDERER_PLOTLY, RendererPaginationSetting
 from backend.flask.models.app_templated_models import Render
 from backend.renderers.base_renderer import BaseRenderer, RendererOutputType, RendererSettings
 from backend.renderers.mpl import MPLRenderer
@@ -16,8 +17,8 @@ class RendererService():
     renderers = {}
 
     def __init__(self) -> None:
-        self.renderers["MPL"] = lambda : self.create_mpl_renderer()
-        self.renderers["PLOTLY"] = lambda : self.create_plotly_renderer()
+        self.renderers[DEFAULT_RENDERER_MPL] = lambda : self.create_mpl_renderer()
+        self.renderers[DEFAULT_RENDERER_PLOTLY] = lambda : self.create_plotly_renderer()
 
     def create_plotly_renderer(self) -> PlotlyRenderer:
         renderer = PlotlyRenderer()
@@ -43,9 +44,9 @@ class RendererService():
     def get_renderer_names(self) -> List[str]:
         return list(self.renderers.keys())
 
-    def render_with_selected(self, renderer_selection: str, parser_output : ParserOutput) -> Render:
-        renderer = self.get_renderer(renderer_selection)
-        renderer.accept(parser_output)
+    def render_with_selected(self, renderer_selection: str, parser_output : ParserOutput, render_mode=RendererPaginationSetting.PAGES) -> Render:
+        renderer : BaseRenderer = self.get_renderer(renderer_selection)
+        renderer.accept(parser_output, render_mode)
         output = self.handle_output(renderer)
         return output
 
