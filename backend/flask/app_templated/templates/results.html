@@ -45,6 +45,15 @@
         container.addEventListener('mousedown', toggleDragging, false);
     </script>
 </div>
+<div class = "extras-container">
+    {% for imagebytes in results.get_extras() %}
+    <img id="extras-image-{{loop.index}}" class="extras-image">
+    <script>
+        image = document.querySelector("#extras-image-{{loop.index}}")
+        image.src = "data:image/png;base64, " + "{{imagebytes}}";
+    </script>
+    {% endfor %}
+</div>
 <hr>
 <div class="embedded-images-container">
     {% for embedded in results.get_embedded_renders() %}
