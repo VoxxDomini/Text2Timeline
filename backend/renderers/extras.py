@@ -65,8 +65,6 @@ def events_per_year_bubble_mpl(parser_output:ParserOutput, group_size=0) -> Rend
     years, event_counts = zip(*year_map.items())
     bubble_sizes = [count * 50 for count in event_counts]
 
-    
-
     if group_size > 0:
         grouped_data = defaultdict(int)
         for year, count in year_map.items():
@@ -83,12 +81,7 @@ def events_per_year_bubble_mpl(parser_output:ParserOutput, group_size=0) -> Rend
     plt.xlabel("Year", fontsize=12)
     plt.ylabel("Number of Events", fontsize=12)
 
-    # More pretty without labels :)
-    #for i, count in enumerate(event_counts):
-    #    plt.text(years[i], event_counts[i], str(count), ha='center', fontsize=10)
-
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.tight_layout()
-    
 
     return get_matplotlib_as_bytes(plt)
