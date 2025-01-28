@@ -15,6 +15,9 @@ def run_cli() -> None:
     initialize_logging()
 
     parser_service = parserservice.ParserService()
+    parser_service.load_plugin_parsers()
+
+
     renderer_service = renderservice.RendererService()
 
     selected_parser = ""

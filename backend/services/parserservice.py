@@ -5,6 +5,7 @@ from ..commons.t2t_logging import log_decorated, log_info
 from ..parsers.allennlp import AllennlpParser, ALLENNLP_PARSER_NAME
 from ..parsers.flairparser import FlairParser, FLAIR_PARSER_NAME
 from ..parsers.spacy import SpacyParser, SPACY_PARSER_NAME
+from . import plugin_service
 
 import threading
 import time
@@ -25,7 +26,9 @@ class ParserService:
 
         self._parser_settings.context_radius = 2
 
-    def load_default_parsers(self) -> None:
+        # this is where cool manager goes
+
+    def load_default_parsers(self) -> None: # maybe should be called pre-load? you can still lazy load by get by name
         log_decorated(":: Beggining to load parsers")
         parser1 = AllennlpParser()
         
@@ -45,6 +48,22 @@ class ParserService:
         self._default_parsers[parser1._PARSER_NAME] = parser1
         self._default_parsers[parser2._PARSER_NAME] = parser2
         self._default_parsers[parser3._PARSER_NAME] = parser3
+
+
+    def load_plugin_parsers(self) -> None:
+        # I've changed this to return a map of all plugins found
+        # so we can use file name as plugin name and class reference as value
+        # so we can have same lazy loading as default plugins
+        # why am I saying we?
+        plugin_name_class_map = plugin_service.load_custom_parsers()
+
+        # Works, should TODO add validation to plugin service
+        # that checks that all abstract class methods are implemented
+        # cause no IDE errors show up, preferably dynamic
+        for key, value in plugin_name_class_map.items():
+            self._custom_parsers[key] = lambda : value()
+        
+
 
     def get_parser_names(self) -> list[str]:
         return list(self._default_paser_loading.keys())

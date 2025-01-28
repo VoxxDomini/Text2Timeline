@@ -60,7 +60,7 @@ class ResultBuilder():
     def build_with_batching(self, parser_input, selected_parser, parser_service, render_service, batch_size):
         start_time = time.perf_counter()
 
-        # See which tokenization is better, per batch or total
+        # See which tokenization is better, per batch or total - nvm shouldn't matter
         if selected_parser == allennlp.ALLENNLP_PARSER_NAME:
             parser_input.tokenize()
 
