@@ -57,9 +57,9 @@ def get_and_parse():
 
 
 def parse(input_text, parser):
-    # Will leave the service references here
-    # and pass them forward because I am unsure
-    # how python lifecycles work, refactor later
+    # Flask/Python usually prefer instance per request
+    # but making a new instance of a parser reloads the model
+    # there's probably a workaround but have not found it yet 
 
     # result_model_old : ResultPageModel = result_builder.build_no_batching(ParserInput(input_text), parser, parser_service, render_service)
     # result_model : ResultPageModel = result_builder.build_with_batching(ParserInput(input_text), parser, parser_service, render_service, batch_size=200)

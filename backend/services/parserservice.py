@@ -28,6 +28,7 @@ class ParserService:
     def load_default_parsers(self) -> None:
         log_decorated(":: Beggining to load parsers")
         parser1 = AllennlpParser()
+        
         log_decorated(":: AllenNLP loaded")
         parser2 = FlairParser()
         log_decorated(":: Flair loaded")
