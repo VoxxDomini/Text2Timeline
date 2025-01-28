@@ -14,7 +14,7 @@ class test_plugin_parser(BaseParser):
 
     @settings.setter
     def settings(self, settings):
-        self.settings = settings
+        self._settings = settings
 
     @override
     def accept(self, input: ParserInput, contains_no_year_temporals=True, batch_mode=False, batch_offset=-1) -> ParserOutput:

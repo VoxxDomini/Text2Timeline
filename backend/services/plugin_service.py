@@ -12,8 +12,8 @@ resource_dir = os.path.dirname(os.path.dirname(current_dir))
 plugin_parser_dir = os.path.join(resource_dir, "resources", "plugins", "parsers")
 
 
-def load_custom_parsers():
-    plugins = {}
+def load_custom_parsers(): # root/plugins/parsers hardcoded path
+    plugins = {} 
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     parsers_dir = os.path.join(project_root, "plugins", "parsers")
     log_info(f"Scanning {parsers_dir} for parser plugins.")

@@ -1,6 +1,7 @@
+from torch.autograd.grad_mode import F
 from backend.commons.parser_commons import ParserInput, ParserOutput, ParserSettings
 from backend.parsers.base import BaseParser
-from ..commons.t2t_logging import log_decorated, log_info
+from ..commons.t2t_logging import log_decorated, log_error, log_info
 
 from ..parsers.allennlp import AllennlpParser, ALLENNLP_PARSER_NAME
 from ..parsers.flairparser import FlairParser, FLAIR_PARSER_NAME
@@ -13,11 +14,12 @@ import time
 
 
 class ParserService:
-    _default_parsers = {}
     _custom_parsers = {}
     _default_paser_loading = {}
     _threads = []
     _parser_settings : ParserSettings = ParserSettings()
+
+    _loaded_parsers = {} # only this should have instances, the rest should have lambda class ref
 
     def __init__(self) -> None:
         self._default_paser_loading[ALLENNLP_PARSER_NAME] = lambda : AllennlpParser()
@@ -45,9 +47,9 @@ class ParserService:
         parser2.settings = settings
         parser3.settings = settings
 
-        self._default_parsers[parser1._PARSER_NAME] = parser1
-        self._default_parsers[parser2._PARSER_NAME] = parser2
-        self._default_parsers[parser3._PARSER_NAME] = parser3
+        self._loaded_parsers[parser1._PARSER_NAME] = parser1
+        self._loaded_parsers[parser2._PARSER_NAME] = parser2
+        self._loaded_parsers[parser3._PARSER_NAME] = parser3
 
 
     def load_plugin_parsers(self) -> None:
@@ -66,17 +68,41 @@ class ParserService:
 
 
     def get_parser_names(self) -> list[str]:
-        return list(self._default_paser_loading.keys())
+        all_parser_names = []
+        if len(self._custom_parsers) > 0:
+            all_parser_names.extend(list(self._custom_parsers.keys()))
+        all_parser_names.extend(list(self._default_paser_loading.keys()))
 
+        # these are all possible-to-load names, regardless of whether in memory       
+        return all_parser_names
 
     def get_parser(self, parser_name: str) -> BaseParser:
-        if parser_name not in self._default_parsers:
-            log_decorated("LAZY LOADING: " + parser_name)
-            self._default_parsers[parser_name] =  self._default_paser_loading[parser_name]()
-            self._default_parsers[parser_name].settings = self._parser_settings
-            log_decorated("FINISHED LOADING: " + parser_name)
+        if parser_name not in self._loaded_parsers:
+            log_info(f"{parser_name} not loaded, searching references.")
+            parser_class_ref = self.find_parser(parser_name)
 
-        return self._default_parsers[parser_name]
+            if parser_class_ref is None:
+                log_error(f"{parser_name} not foudn in loaded references, an unprecedented error has occurred. Run.")
+                # python 3.9 doesn't support None optional return type, makes you wonder how they released this, let it fail for now
+            else:
+                log_decorated(f"LAZY LOADING: {parser_name}")
+                self._loaded_parsers[parser_name] =  parser_class_ref()
+                self._loaded_parsers[parser_name].settings = self._parser_settings
+                log_decorated(f"FINISHED LOADING: {parser_name}")
+        else:
+            log_info(f"{parser_name} in memory")
+
+        return self._loaded_parsers[parser_name]
+
+
+    def find_parser(self, parser_name):
+        if parser_name in self._default_paser_loading:
+            return self._default_paser_loading[parser_name]
+
+        if parser_name in self._custom_parsers:
+            return self._custom_parsers[parser_name]
+
+        return None
 
     def parse_with_selected(self, input: ParserInput, selected_parser: str) -> ParserOutput:
         start_time = time.perf_counter()
@@ -92,7 +118,7 @@ class ParserService:
     def confirm_parsers_loaded(self):
         start_time = time.perf_counter()
         outputs: list[ParserOutput] = []
-        for parser in self._default_parsers.values():
+        for parser in self._loaded_parsers.values():
             outputs.append(parser.accept(ParserInput("The quick brown fox jumped over the lazy brown dog in 1999. Seven seas blow seven windows in text to speech.")))
 
         for o in outputs:
