@@ -18,9 +18,9 @@ class test_plugin_parser(BaseParser):
 
     @override
     def accept(self, input: ParserInput, contains_no_year_temporals=True, batch_mode=False, batch_offset=-1) -> ParserOutput:
-        print("ACCEPT METHOD CALLED FROM PLUGIN")
+        print("This is a demo plugin, accept will run the parsers on an input and return the ouput")
         return ParserOutput([])
 
     @override
     def initialize(self) -> None:
-        print("I'm an idiot")
+        print("This is a demo plugin, initializing it shoud load anything that affects performance if the class requires it")

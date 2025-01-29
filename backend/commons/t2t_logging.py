@@ -32,7 +32,7 @@ def initialize_logging() -> None:
     )
 
 
-def get_caller_name() -> str: # this *might* have performance issues if logging a lot? investigatae later
+def get_caller_name() -> str: # how's python inspect (reflection?) performance?
     frame = inspect.stack()[2]
     module = inspect.getmodule(frame[0])
     filename = module.__file__ # type:ignore

@@ -11,6 +11,7 @@ from backend.renderers.plotly import PlotlyRenderer
 
 from ..commons.t2t_logging import log_info
 
+import time
 import base64
 
 class RendererService():
@@ -45,9 +46,15 @@ class RendererService():
         return list(self.renderers.keys())
 
     def render_with_selected(self, renderer_selection: str, parser_output : ParserOutput, render_mode=RendererPaginationSetting.PAGES) -> Render:
+        start_time = time.perf_counter()
+        
+        log_info(f"Begining to render with {renderer_selection}")
         renderer : BaseRenderer = self.get_renderer(renderer_selection)
+        log_info(f"Initialized renderer {renderer_selection} in {str(time.perf_counter() - start_time)}")
         renderer.accept(parser_output, render_mode)
+        log_info(f"{renderer_selection} accept method finished in  {str(time.perf_counter() - start_time)}")
         output = self.handle_output(renderer)
+        log_info(f"Render service output handling finished in {str(time.perf_counter() - start_time)}")
         return output
 
     def render_with_all(self, parser_output: ParserOutput) -> List[Render]:

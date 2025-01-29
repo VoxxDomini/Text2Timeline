@@ -28,7 +28,7 @@ class ParserService:
 
         self._parser_settings.context_radius = 2
 
-        # this is where cool manager goes
+        # TODO decide whether loading parsers goes here, or gets called explicitly
 
     def load_default_parsers(self) -> None: # maybe should be called pre-load? you can still lazy load by get by name
         log_decorated(":: Beggining to load parsers")
@@ -82,13 +82,16 @@ class ParserService:
             parser_class_ref = self.find_parser(parser_name)
 
             if parser_class_ref is None:
-                log_error(f"{parser_name} not foudn in loaded references, an unprecedented error has occurred. Run.")
+                log_error(f"{parser_name} not found in loaded references, an unprecedented error has occurred. Run.")
                 # python 3.9 doesn't support None optional return type, makes you wonder how they released this, let it fail for now
             else:
                 log_decorated(f"LAZY LOADING: {parser_name}")
+                start_time = time.perf_counter()
                 self._loaded_parsers[parser_name] =  parser_class_ref()
                 self._loaded_parsers[parser_name].settings = self._parser_settings
-                log_decorated(f"FINISHED LOADING: {parser_name}")
+                elapsed_time = time.perf_counter() - start_time
+
+                log_decorated(f"FINISHED LOADING: {parser_name} in {str(elapsed_time)}")
         else:
             log_info(f"{parser_name} in memory")
 
@@ -107,6 +110,7 @@ class ParserService:
     def parse_with_selected(self, input: ParserInput, selected_parser: str) -> ParserOutput:
         start_time = time.perf_counter()
 
+        log_info(f"Beginning to parse")
         output: ParserOutput =  self.get_parser(selected_parser).accept(input)
         output.elapsed_time = time.perf_counter() - start_time
 
@@ -126,3 +130,11 @@ class ParserService:
 
         log_decorated("PARSER CONFIRMATION COMPLETED IN " + str(time.perf_counter() - start_time))
 
+    # custom parsers are not expected to implement batching
+    # especially since it didn't prove to be much of a performance improvement
+    # so we'll just use this to run everything with default settings
+    # from wherever this is being called from if it's a custom one
+    # maybe add an option later if someone really wants to implement everything
+    # TODO add main managing service common for cli/rest and whatever else comes up
+    def is_custom_parser(self, parser_namae) -> bool:
+        return parser_namae in self._custom_parsers

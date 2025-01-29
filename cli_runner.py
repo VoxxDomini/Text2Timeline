@@ -8,7 +8,7 @@ from backend.renderers.base_renderer import RendererOutputType
 from backend.services import parserservice, renderservice
 from backend.commons.utils import word_list_to_string
 from backend.commons.parser_commons import ParserInput
-from backend.renderers.mpl import MPLInteractiveRenderer
+from backend.renderers.mpl import MPLInteractiveRenderer, MPLRenderer
 from backend.commons.t2t_logging import initialize_logging
 
 def run_cli() -> None:
@@ -54,6 +54,8 @@ def run_cli() -> None:
     # replace this managed rendering if plotly is implemented
     # for now, local mpl rendering for the full cli experience
     renderer = MPLInteractiveRenderer()
+    renderer = MPLRenderer()
+
     renderer.accept(parser_output, RendererPaginationSetting.SINGLE_IMAGE)
     renderer.output_type = RendererOutputType.LIBRARY_NATIVE
 

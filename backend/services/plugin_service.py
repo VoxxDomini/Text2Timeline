@@ -7,11 +7,6 @@ from ..parsers.base import BaseParser
 from ..commons.t2t_logging import log_error, log_info
 
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-resource_dir = os.path.dirname(os.path.dirname(current_dir))
-plugin_parser_dir = os.path.join(resource_dir, "resources", "plugins", "parsers")
-
-
 def load_custom_parsers(): # root/plugins/parsers hardcoded path
     plugins = {} 
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -25,8 +20,8 @@ def load_custom_parsers(): # root/plugins/parsers hardcoded path
 
                 log_info(f"Attemping to import module {module_name}")
                 plugin_module = importlib.import_module(module_name)
+                log_info(f"Verifying {plugin_module}")
                 plugin_class = find_parser_class(plugin_module)
-                log_info("Class passed all checks, attempting to import")
 
                 if plugin_class:
                     plugins[plugin_name] = plugin_class
@@ -47,9 +42,7 @@ def load_custom_parsers(): # root/plugins/parsers hardcoded path
 
 
 # this follows Java convention, name your class same as file name
-# since they have to be unique, lower's the chance of that happening since
-# you won't be able to name to files the same
-# I don't think I'm going to bother with sanitizing the file and class names
+# enforces uniqueness AND takes care of imports getting detected by .getmembers
 def find_parser_class(plugin_module): 
     expected_class_name = plugin_module.__name__.split('.')[-1] 
     print(f"Expecting to find class named {expected_class_name}")
@@ -62,7 +55,9 @@ def find_parser_class(plugin_module):
             else:
                 log_error(f"Is not a subclass of BaseParser")
         else:
-            log_error(f"{name} not expected value of {expected_class_name}")
+            # this also detects imports
+            # enforcing classname=filename should handle it
+            pass
 
 
     print(f"Class not implemented correctly.")

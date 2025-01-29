@@ -244,19 +244,13 @@ def zoom_factory(ax, base_scale=2.):
         curx = event.x
         cury = event.y
 
-        # if not changed mouse position(or changed so little)
-        # remain the pre scale center
         if abs(curx - prex) < 10 and abs(cury - prey) < 10:
-            # remain same
             xdata = prexdata
             ydata = preydata
-        # if changed mouse position ,also change the cur scale center
         else:
-            # change
-            xdata = event.xdata  # get event x location
-            ydata = event.ydata  # get event y location
+            xdata = event.xdata 
+            ydata = event.ydata 
 
-            # update previous location data
             prex = event.x
             prey = event.y
             prexdata = xdata
@@ -271,16 +265,17 @@ def zoom_factory(ax, base_scale=2.):
 
         # log.debug((xdata, ydata))
         if event.button == 'up':
-            # deal with zoom in
+            # zoom in
             scale_factor = 1 / base_scale
         elif event.button == 'down':
-            # deal with zoom out
+            # zoom out
             scale_factor = base_scale
         else:
-            # deal with something that should never happen
+            # sanity
             scale_factor = 1
             print(event.button)
-        # set new limits
+        
+
         ax.set_xlim([
             xdata - cur_xrange * scale_factor,
             xdata + cur_xrange * scale_factor
@@ -291,11 +286,9 @@ def zoom_factory(ax, base_scale=2.):
         ])
         plt.draw()  # force re-draw
 
-    fig = ax.get_figure()  # get the figure of interest
-    # attach the call back
+    fig = ax.get_figure()
     fig.canvas.mpl_connect('scroll_event', zoom_fun)
 
-    # return the function
     return zoom_fun
 
 
