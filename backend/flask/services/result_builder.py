@@ -20,6 +20,9 @@ import time
     with multiple containers running, and since the current version of the application has multiple models
     for academic purposes, the ram usage would be very high, maybe in a future v2 of the app a more sophisticated
     architecture can be implemented
+
+    -- actually, request multithreading is being handled surprisingly well, making parsers stateless should resolve
+    most concurrency issues for up to a reasonable amount of users
 '''
 
 class ResultBuilder():
@@ -36,6 +39,7 @@ class ResultBuilder():
 
         plotly_render : Render = render_service.render_with_selected(DEFAULT_RENDERER_PLOTLY, output)
         plotly_render.placement = RenderPlacement.INTERACTIVE
+        render_list.append(plotly_render)
 
         mpl_renders : List[Render] = []
 
@@ -45,13 +49,12 @@ class ResultBuilder():
             mpl_renders.append(temp_render)
         elif self.gallery_render_mode == RendererPaginationSetting.PAGES:
             # TODO Expose page size higher up
-            split_outputs = self.paginate(output, page_size=15)
+            split_outputs = self.paginate(output, page_size=15) # TODO calculate this based on output size
             for part in split_outputs:
                 temp_render = render_service.render_with_selected(DEFAULT_RENDERER_MPL, part)
                 temp_render.placement = RenderPlacement.GALLERY
                 mpl_renders.append(temp_render)
 
-        render_list.append(plotly_render)
         render_list.extend(mpl_renders)
         result_model : ResultPageModel = self.build_from_ouput(output, render_list)
         return self.add_extras(result_model, output)

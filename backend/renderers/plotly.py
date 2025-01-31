@@ -12,12 +12,12 @@ from typing import List
 
 
 class PlotlyRenderer(BaseRenderer):
-    _RENDERER_NAME : str = "PLOTLY"
-    
+    _RENDERER_NAME: str = "PLOTLY"
+
     @override
-    def accept(self, parser_output: ParserOutput, pagination_setting:RendererPaginationSetting = RendererPaginationSetting.PAGES):
+    def accept(self, parser_output: ParserOutput, pagination_setting: RendererPaginationSetting = RendererPaginationSetting.PAGES):
         self._parser_output = parser_output
-        self.build_plot(self._parser_output.get_current_page())
+        self.build_plot(self._parser_output.content)
 
     @override
     def render(self):
@@ -25,7 +25,8 @@ class PlotlyRenderer(BaseRenderer):
             self._fig.show()
         elif self._output_type == RendererOutputType.EMBEDDED:
             buffer = io.StringIO()
-            self._fig.write_html(file=buffer,include_plotlyjs=False, full_html=False)
+            self._fig.write_html(
+                file=buffer, include_plotlyjs=False, full_html=False)
             return buffer.getvalue()
 
     @property
@@ -44,7 +45,6 @@ class PlotlyRenderer(BaseRenderer):
     def output_type(self, ot: RendererOutputType):
         self._output_type = ot
 
-
     @override
     def render_next_page(self):
         self.build_plot(self._parser_output.get_and_turn_page())
@@ -55,12 +55,10 @@ class PlotlyRenderer(BaseRenderer):
         while self._parser_output.current_page_exists():
             self.render_next_page()
 
-
     def build_plot(self, entity_list: List[TemporalEntity]):
         entities = sorted(entity_list, key=lambda x: int(x.year))
         fig = go.Figure()
         dates = self.get_date_list(entities)
-
 
         # Adding event markers with larger text
         for i, e in enumerate(entities):
@@ -72,48 +70,56 @@ class PlotlyRenderer(BaseRenderer):
                 text=self.format_text(e.event, 25),
                 hovertemplate="CONTEXT",
                 textposition="bottom right",
-                textfont=dict(size=14)  # Set the text size
+                textfont=dict(size=14)
             ))
 
-        # Setting layout properties
         fig.update_layout(
             title="Timeline of Events",
             showlegend=False,
             width=1920,
-            height=1080
-            #plot_bgcolor='rgba(255, 255, 255, 255)'  # Set plot background color (transparent)
+            height=1080,
         )
 
-        # Adjusting the x-axis grid properties
+        # x-axis grid properties
         if dates:
             fig.update_xaxes(
                 showticklabels=True,
                 showgrid=True,
                 tickmode="array",
                 tickvals=dates,
-                ticktext=[str(d) for d in dates],  # Display years as tick labels
+                # Display years as tick labels
+                ticktext=[str(d) for d in dates],
                 tickfont=dict(color="black")
             )
         else:
             fig.update_xaxes(showticklabels=False, showgrid=False)
 
-        # Hide the event axis label
-        fig.update_yaxes(showticklabels=False, showgrid=False)  # Hide the y-axis
+        fig.update_yaxes(showticklabels=False, showgrid=False)
 
+        zoom_width = int(len(dates)/10)
+        zoom_center = int(len(dates)/2)
+
+        default_zoom_range = [dates[zoom_center],
+                              dates[zoom_center+zoom_width]]
+        
+        # Default zoom works, pendulum needs some work
         fig.update_layout(
-            paper_bgcolor='rgba(84,84,84,255)',
-            plot_bgcolor='rgba(84,84,84,255)'
+            paper_bgcolor='rgba(232, 232, 232, 255)',
+            plot_bgcolor='rgba(232, 232, 232, 255)',
+            xaxis={  
+                'range': default_zoom_range,
+                'type': 'linear'
+            }
         )
 
         self._fig = fig
-        
 
     def pendulum(self, value: int):
         # dont ask
         rem = value % 5
         if rem == 0:
             rem = 5
-        
+
         if rem == 1:
             return 1
         elif rem == 2:
@@ -125,8 +131,7 @@ class PlotlyRenderer(BaseRenderer):
         elif rem == 5:
             return 9
 
-
-    def format_text(self, text, limit):
+    def format_text(self, text, limit):  # replace with std text formatter used in mpl renderer
         s = text.split(" ")
         result = text.split(" ")
 
@@ -138,10 +143,9 @@ class PlotlyRenderer(BaseRenderer):
                 char_count = 0
         return " ".join(result)
 
-
     def get_date_list(self, entity_list):
         result = []
         for x in entity_list:
             result.append(int(x.year))
-        result = list(set(result))
+        result = sorted(list(set(result)))
         return result

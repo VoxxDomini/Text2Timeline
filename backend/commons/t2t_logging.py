@@ -25,6 +25,9 @@ def log_class_methods(classReference):
 
 
 def initialize_logging() -> None:
+    logger = logging.getLogger('matplotlib.font_manager')
+    logger.setLevel(logging.WARNING) 
+
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s %(levelname)s %(message)s',

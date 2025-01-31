@@ -29,6 +29,7 @@ class ParserService:
         self._parser_settings.context_radius = 2
 
         # TODO decide whether loading parsers goes here, or gets called explicitly
+        self.load_plugin_parsers()
 
     def load_default_parsers(self) -> None: # maybe should be called pre-load? you can still lazy load by get by name
         log_decorated(":: Beggining to load parsers")
@@ -113,6 +114,8 @@ class ParserService:
         log_info(f"Beginning to parse")
         output: ParserOutput =  self.get_parser(selected_parser).accept(input)
         output.elapsed_time = time.perf_counter() - start_time
+        # currently all default parsers do this, but this more rigid support for plugin parsers
+        output.parser_name = selected_parser 
 
         log_decorated("Parsing with " + str(output.parser_name) + " took " + str(output.elapsed_time))
 

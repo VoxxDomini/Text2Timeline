@@ -1,4 +1,10 @@
 
+### Run in CLI
+
+```
+1) python text2timeline.py -cli
+2) follow instructions
+```
 
 ### Size disclaimer
 
@@ -19,9 +25,9 @@ poetry run python -m spacy download en_core_web_sm
 
 and manually set scipy to version 1.12 if another dependency sets it to something else
 
-## Issues/Todo
+## Known issues
+Lost!
 
-Make models in parsers not re-load for each instance
 
 
 ## Building with docker

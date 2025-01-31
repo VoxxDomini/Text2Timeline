@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 
 # Move this to somewhere else, rc params can be modified from anywhere
 matplotlib.use('agg')
-plt.rcParams['axes.facecolor'] = '#adadad'
-plt.rcParams['figure.facecolor'] = '#adadad'
+plt.rcParams['axes.facecolor'] = '#e8e8e8'
+plt.rcParams['figure.facecolor'] = '#e8e8e8'
 
 initialize_logging()
 

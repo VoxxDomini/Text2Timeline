@@ -33,6 +33,9 @@ class SpacyParser(BaseParser):
 
     @override
     def accept(self, input: ParserInput, contains_no_year_temporals=True, batch_mode=False, batch_offset=-1) -> ParserOutput:
+        # BIG TODO, move all class state into a short lifecycle context object
+        # since multiple requests actually works surprisingly well might as well clean up all the race conditions
+        
         self.input = input
         self._contains_no_year_temporals = contains_no_year_temporals and not batch_mode
         self._batch_mode = batch_mode

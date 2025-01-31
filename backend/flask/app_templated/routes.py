@@ -69,29 +69,19 @@ def parse(input_text, parser):
     
     return render_template('results.html', results=result_model)
 
-@app.route('/login', methods=['GET', 'POST'])
+
+""" @app.route('/login', methods=['GET', 'POST'])
 def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
         flash('Login requested for user {}, remember_me={}'.format(
             login_form.username.data, login_form.remember_me.data))
         return redirect(url_for("index"))
-    return render_template('login.html', title='Sign In', form=login_form)
+    return render_template('login.html', title='Sign In', form=login_form) """
 
 
 @app.route('/')
 @app.route('/index')
 def index():
-    user = {'username': 'Miguel'}
-    posts = [
-        {
-            'author': {'username': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'username': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    # return render_template('index.html', title='Home', user=user, posts=posts)
-    return redirect(url_for("get_and_parse"))
+    return render_template('index.html')
+    # return redirect(url_for("get_and_parse"))

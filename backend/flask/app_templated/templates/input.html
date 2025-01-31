@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="row"><div class="col-xs-12 col-md-6 offset-md-3">
     <h1>Submit Text or File</h1>
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
-        <p>{{ form.text_area.label }}<br>{{ form.text_area() }}</p>
+        <p>{{ form.text_area.label }}<br>{{ form.text_area(style="width:100%;") }}</p>
         <p>{{ form.file_upload.label }}<br>{{ form.file_upload() }}</p>
         <div>
           {{ form.parser_selection.label}}<br>
-          {{ form.parser_selection}}
+          {{ form.parser_selection(style="width:100%;")}}
         </div>
-        <p>{{ form.submit() }}</p>
+        <br>
+        <p>{{ form.submit(class="btn btn-primary btn-block", style="width:100%;") }}</p>
     </form>
+  </div></div>
 {% endblock %}
