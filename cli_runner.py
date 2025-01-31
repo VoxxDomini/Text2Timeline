@@ -54,7 +54,7 @@ def run_cli() -> None:
     # replace this managed rendering if plotly is implemented
     # for now, local mpl rendering for the full cli experience
     renderer = MPLInteractiveRenderer()
-    renderer = MPLRenderer()
+    #renderer = MPLRenderer()
 
     renderer.accept(parser_output, RendererPaginationSetting.SINGLE_IMAGE)
     renderer.output_type = RendererOutputType.LIBRARY_NATIVE

@@ -1,4 +1,6 @@
 from hashlib import new
+
+from scipy.sparse import base
 from backend.commons.t2t_enums import RendererPaginationSetting
 from backend.commons.temporal import TemporalEntity
 from .base_renderer import BaseRenderer, RendererSettings, RendererOutputType
@@ -17,9 +19,15 @@ from ..commons.utils import get_export_file_path, join_folder_file_names
 
 import random
 from io import BytesIO
-from ..commons.t2t_logging import log_info
+from ..commons.t2t_logging import log_decorated, log_info
 
 import textwrap
+
+class AnnotationWrapper:
+    def __init__(self, content: str, height: int, width: int):
+        self.content = content
+        self.height = height
+        self.width = width
 
 class MPLRenderer(BaseRenderer):
     _RENDERER_NAME : str = "MPL"
@@ -62,17 +70,27 @@ class MPLRenderer(BaseRenderer):
         years = [x.year if x.year != '' else "0001" for x in temporal_entities]
         years = list(map(self.pad_year, years))
         dates = [datetime.strptime(d, "%Y") for d in years]
-        interval = self.calculate_interval(dates)
-        inter = int(interval / 20)
+
+        distance_between_min_max_years, min_date, max_date = self.calculate_interval(dates)
+        
+        # TODO batches get different intervals, is that bad? :(
+        inter = int(distance_between_min_max_years / 20) # baseline interval
+
+        log_decorated(f"Mpl Intervals, year range for this plot {distance_between_min_max_years}, baseline interval {inter}")
 
         names = []
-        for e in temporal_entities:
-            names.append(self.add_new_lines(e.event))
+        annotation_wrappers = []
 
+        for e in temporal_entities:
+            formatted, wrapped = self.format_and_add_metadata(e.event)
+            names.append(formatted)
+            annotation_wrappers.append(wrapped)
+            
 
         names, dates = zip(*((name, date) for name, date in zip(names, dates) if int(date.year) > inter))
 
-        levels = self.generate_levels(len(dates), 10, 30)
+        #levels = self.generate_levels(len(dates), 10, 30)
+        levels = self.generate_levels_2(dates, inter, annotation_wrappers, min_date)
     
         fig, ax = plt.subplots(figsize=(70, 10))
 
@@ -84,7 +102,7 @@ class MPLRenderer(BaseRenderer):
         # annotate lines
         last_top = None
         last_bot = None
-        min_date_gap = int(interval / 12)
+        min_date_gap = int(distance_between_min_max_years / 12)
 
         for d, l, r in zip(dates, levels, names):
             h_align = "left"
@@ -96,13 +114,14 @@ class MPLRenderer(BaseRenderer):
             if last is not None:
                 dif = abs(int((last-d).days/365))
 
-            if last is not None and  dif <= min_date_gap:
+            if last is not None and dif <= min_date_gap:
                 h_align = "right"
 
             ax.annotate(r, xy=(d, l),
                         xytext=(0, np.sign(l)*3), textcoords="offset points",
-                        horizontalalignment=h_align,
-                        verticalalignment="center" if l > 0 else "top")
+                        horizontalalignment="left",
+                        verticalalignment="center" if l > 0 else "top"
+                        )
 
             if l > 1:
                 last_top = d
@@ -127,11 +146,6 @@ class MPLRenderer(BaseRenderer):
         ax.spines[["left", "top", "right"]].set_visible(False)
 
         ax.margins(y=0.1)
-
-        # This should only be available in the interactive version
-        # Causes some weird threading issues when generating images
-        # TODO move later
-        # f = zoom_factory(ax)
 
         self._plot = plt
 
@@ -182,17 +196,26 @@ class MPLRenderer(BaseRenderer):
         maxDate = sortedDates[-1]
         difference = minDate - maxDate
 
+        # number of seconds in non-leap year 31536000 to get years, divmod returns tuple of quotient/remainder
+        # so we want first element
         difference_in_years = divmod(difference.total_seconds(), 31536000)[0]
 
-        return abs(difference_in_years)
+        return abs(difference_in_years), minDate, maxDate
 
 
-    def add_new_lines(self, text):
+    def format_and_add_metadata(self, text):
+        wrapped_annotation : AnnotationWrapper = AnnotationWrapper(text, 0, 0)
+    
         if len(text) > self._MAX_LINE_LENGTH:
             self._text_wrapper.max_lines = self._MAX_LINE_LENGTH
-            return self._text_wrapper.fill(text)
+            formatted_text = self._text_wrapper.fill(text)
+            wrapped_annotation.height = formatted_text.count("\n")
+            wrapped_annotation.width = self._MAX_LINE_LENGTH
+            return formatted_text, wrapped_annotation
         else:
-            return text
+            wrapped_annotation.height = 1
+            wrapped_annotation.width = len(text)
+            return text, wrapped_annotation
 
     def generate_levels(self, numberOfDates, numberOfLevels, levelRange):
         level_values = []
@@ -210,9 +233,109 @@ class MPLRenderer(BaseRenderer):
             level_values.append(new_level)
             level_values.append((new_level*-1)) """
 
+        #level_values = [5,10,15,20,25,30,35,40] debug level to line height conversion
+
         levels = np.tile(level_values,
                         int(np.ceil(numberOfDates/len(level_values))))[:numberOfDates]
         return levels
+
+    def generate_levels_2(self, dates, baseline_interval, annotation_wrappers: List[AnnotationWrapper], start_date):
+        if len(dates) != len(annotation_wrappers):
+            raise RuntimeError("Not good")
+
+        if baseline_interval == 0:
+            print("????????")
+            return np.tile([10,20,30,40,50], len(dates))[:len(dates)]
+
+        dates_numeric: List[int] = [dt.year for dt in dates]
+
+        levels = []
+        base_level = 5
+
+        padding = 5
+        
+        current = base_level
+        switch = 1
+
+        index = 0
+        max_height = 50
+
+        level_map = {}
+
+        for date, text_info in zip(dates_numeric, annotation_wrappers):
+            current = base_level
+            switch = 1
+
+            divmod_tuple = divmod(date, baseline_interval*2) # i realised way too late that this is kind of wrong, but I got it more or less working like this so whatever, eventually fix for edge cases
+            section_key = divmod_tuple[0]
+            print(f"*******GL2 date: {date} - skey:{divmod_tuple[0]} remainder:{divmod_tuple[1]}")
+
+
+            event_tuples_in_section = self.gl2_get_level_map_content_in_range(level_map, section_key, 2)
+            if event_tuples_in_section is not None and len(event_tuples_in_section) > 0:
+                event_tuples_in_section_sorted = sorted(event_tuples_in_section, key=lambda tuple: tuple[0])
+                print(f"GL2 {date} event being compared with {event_tuples_in_section_sorted}")
+                min_c = 0
+                for event_tuple in event_tuples_in_section_sorted:
+                    if self.gl2_are_levels_touching(current, text_info.height, event_tuple[0], event_tuple[1]):
+                        current += text_info.height
+                        current += padding
+                        min_c += 1
+                        if current > max_height: # edge case here but its rare, eventually fix comparing minus switches to only other minuses
+                            current = random.randint(base_level, 30) # randomly chosen 
+                            switch *= -1
+                            break
+                print(f"GL2 {date} was incremented {min_c} times")
+
+                
+            levels.append(current*switch)
+            self.gl2_upsert_dict(level_map, section_key, (current, text_info.height, date)) 
+            index += 1
+
+
+        return levels
+
+    # lookbehind sections in range
+    def gl2_get_level_map_content_in_range(self, level_map, current, lookbehind_range):
+        level_map_content = []
+
+        lmap_keys = list(level_map.keys())
+
+        if len(lmap_keys) == 0:
+            return []
+
+        # iterate backwards no more than 3 elements, why is python like this
+        for i in range(len(lmap_keys) - 1, len(lmap_keys) - (lookbehind_range+1), -1):
+            key = lmap_keys[i]
+            if abs(current-key) > 3:
+                #print(f"Breaking because current {current} too far from last {key} at cycle {i}")
+                break
+
+            level_map_content.extend(level_map[key])
+            
+        return level_map_content
+
+        
+            
+
+    def gl2_are_levels_touching(self, clevel, cheight, pvlevel, pheight):
+        if pvlevel - pheight <= clevel:
+            #print(f"GL2 touching because {pvlevel} - {pheight} <= {clevel}")
+            return True
+
+        return False
+
+    def gl2_are_widths_touching(self, cdate, pdate, interval):
+        # i'm going to assume that a distance
+        # of 60 max line width is around 2 intervals
+        return pdate - cdate < interval * 2
+
+    def gl2_upsert_dict(self, dict, key, val):
+        if key in dict:
+            dict[key].append(val)
+        else:
+            dict[key] = []
+            dict[key].append(val)
 
 
     """ def generate_levels(self, dates, base_level=10, min_spacing=5):
