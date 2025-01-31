@@ -32,6 +32,7 @@ class AnnotationWrapper:
 class MPLRenderer(BaseRenderer):
     _RENDERER_NAME : str = "MPL"
     _MAX_LINE_LENGTH = 60
+    use_old_plot_algo = False
 
     @override
     def accept(self, parser_output: ParserOutput, pagination_setting:RendererPaginationSetting=RendererPaginationSetting.PAGES):
@@ -88,9 +89,11 @@ class MPLRenderer(BaseRenderer):
             
 
         names, dates = zip(*((name, date) for name, date in zip(names, dates) if int(date.year) > inter))
-
-        #levels = self.generate_levels(len(dates), 10, 30)
-        levels = self.generate_levels_2(dates, inter, annotation_wrappers, min_date)
+        
+        if self.use_old_plot_algo:
+            levels = self.generate_levels(len(dates), 10, 30)
+        else:
+            levels = self.generate_levels_2(dates, inter, annotation_wrappers, min_date)
     
         fig, ax = plt.subplots(figsize=(70, 10))
 
@@ -116,21 +119,24 @@ class MPLRenderer(BaseRenderer):
 
             if last is not None and dif <= min_date_gap:
                 h_align = "right"
-
-            ax.annotate(r, xy=(d, l),
-                        xytext=(0, np.sign(l)*3), textcoords="offset points",
-                        horizontalalignment="left",
-                        verticalalignment="center" if l > 0 else "top"
-                        )
+            
+            if self.use_old_plot_algo:
+                ax.annotate(r, xy=(d, l),
+                            xytext=(0, np.sign(l)*3), textcoords="offset points",
+                            horizontalalignment=h_align,
+                            verticalalignment="center" if l > 0 else "top"
+                            )
+            else: # current method
+                ax.annotate(r, xy=(d, l),
+                            xytext=(2, np.sign(l)*3), textcoords="offset points",
+                            horizontalalignment="left",
+                            verticalalignment="center" if l > 0 else "top"
+                            )
 
             if l > 1:
                 last_top = d
             else:
                 last_bot = d
-
-        # log_info("INTERVAL ERROR: " + str(dates))
-        # log_info("INTERVAL ERROR: " + str(years))
-        # log_info("INTERVAL ERROR: " + str(inter) + " from " + str(interval))
 
         # Some weird error when dates are too close together
         # instead of redoing the math, i'll do this!
@@ -260,34 +266,49 @@ class MPLRenderer(BaseRenderer):
         index = 0
         max_height = 50
 
+        last_date = None
+        number_of_stacked_dates = 0
+        stacked_date_extra_padding = 2
+
         level_map = {}
 
         for date, text_info in zip(dates_numeric, annotation_wrappers):
             current = base_level
             switch = 1
 
-            divmod_tuple = divmod(date, baseline_interval*2) # i realised way too late that this is kind of wrong, but I got it more or less working like this so whatever, eventually fix for edge cases
-            section_key = divmod_tuple[0]
-            print(f"*******GL2 date: {date} - skey:{divmod_tuple[0]} remainder:{divmod_tuple[1]}")
+            divmod_tuple = divmod(date, baseline_interval*2) 
+            # i realised way too late that this is kind of wrong, but I got it more or less working like this so whatever, eventually fix for edge cases
+            # sections were supposed to be bigger and lookbehind being one section long only if remainder was above certain threshold, but this kinda works too
+            section_key = divmod_tuple[0] 
+            #print(f"*******GL2 date: {date} - skey:{divmod_tuple[0]} remainder:{divmod_tuple[1]}")
 
+            if last_date == date:
+                number_of_stacked_dates += 1
+            else:
+                number_of_stacked_dates = 0
 
             event_tuples_in_section = self.gl2_get_level_map_content_in_range(level_map, section_key, 2)
             if event_tuples_in_section is not None and len(event_tuples_in_section) > 0:
                 event_tuples_in_section_sorted = sorted(event_tuples_in_section, key=lambda tuple: tuple[0])
-                print(f"GL2 {date} event being compared with {event_tuples_in_section_sorted}")
+                #print(f"GL2 {date} event being compared with {event_tuples_in_section_sorted}")
                 min_c = 0
                 for event_tuple in event_tuples_in_section_sorted:
                     if self.gl2_are_levels_touching(current, text_info.height, event_tuple[0], event_tuple[1]):
-                        current += text_info.height
+                        current = event_tuple[0] + text_info.height
                         current += padding
+                        current += number_of_stacked_dates * stacked_date_extra_padding
                         min_c += 1
                         if current > max_height: # edge case here but its rare, eventually fix comparing minus switches to only other minuses
                             current = random.randint(base_level, 30) # randomly chosen 
                             switch *= -1
                             break
-                print(f"GL2 {date} was incremented {min_c} times")
+                #print(f"GL2 {date} was incremented {min_c} times")
 
-                
+            
+
+            last_date = date
+            bonus_padding = number_of_stacked_dates * stacked_date_extra_padding
+
             levels.append(current*switch)
             self.gl2_upsert_dict(level_map, section_key, (current, text_info.height, date)) 
             index += 1
