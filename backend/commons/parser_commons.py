@@ -5,6 +5,8 @@ from nltk.sem.logic import EntityType
 from backend.commons.t2t_logging import log_decorated, log_error, log_info
 from ..commons.temporal import TemporalEntity, TemporalEntityType
 
+import datetime
+
 import re
 
 class ParserSettings(object):
@@ -71,6 +73,7 @@ class ParserInput():
 
 
 class ParserOutput(object):
+    enable_creation_timestamps = False
 
     def __init__(self, content: List[TemporalEntity], contains_no_year_temporals : bool = False, batch_mode=False, finalizeOnInit=True):
         self._content = content
@@ -88,6 +91,9 @@ class ParserOutput(object):
         self._year_number_map = None
         self._year_entity_map = None
         self._years = None
+
+        if self.enable_creation_timestamps:
+            self._creation_timestamp = datetime.datetime.now()
 
         """
             Many of these are for backwards compatibility with dumbed-down versions of the parser, which should also
@@ -243,3 +249,27 @@ class ParserOutput(object):
 
     def sort_asc(self):
         self._content = sorted(self._content, key=lambda x: int(x.year))
+
+
+    # ABORT MISSION - even with batching, I can't get accurate and standardized times for model predictions
+    # leaving this here in case I get an idea but turning off the timestamp control
+    def get_progress_stats_from_timestamps(self, step: int):
+        sorted_by_order = sorted(self._content, key=lambda x: int(x.order))
+
+        total_sentence_progress = []
+        temporals_found_progress = []
+
+        step_counter = 0
+
+        for element in sorted_by_order:
+            step_counter += element.order
+
+            if step_counter >= step:
+                delta_time = self._creation_timestamp - element._creation_timestamp
+                delta_time_seconds = delta_time.total_seconds()
+
+                progress_tuple = (element.order, delta_time_seconds)
+                total_sentence_progress.append(progress_tuple)
+                step_counter = 0
+
+        pass

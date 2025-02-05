@@ -6,7 +6,7 @@ from backend.services.parserservice import ParserService
 from backend.commons.t2t_logging import log_info
 from typing import List
 
-from backend.renderers.extras import parser_comparison_year_vs_no_year_grouped_bar_chart
+from backend.renderers.extras import parser_comparison_year_vs_no_year_grouped_bar_chart, parser_comparison_average_event_lengths, parser_comparison_execution_time
 
 
 class HtmlBuilder:
@@ -62,7 +62,7 @@ class ParserComparisonService:
         self._parse_and_save_outputs()
 
 
-    def calculate_average_event_length(self, parser_output: ParserOutput):
+    def calculate_average_event_length(self, parser_output: ParserOutput): # TODO remove outliers maybe? visually allennlp produces longer results but shows similar in stats
         total_length = 0
         total_count = 0
 
@@ -81,10 +81,20 @@ class ParserComparisonService:
         
         # ADD all additional renders for every statistic here, everything should sort itself out autmatically
 
-        render: Render = parser_comparison_year_vs_no_year_grouped_bar_chart(p_outputs)
-        render.placement = RenderPlacement.EXTRAS
+        render_year_no_year: Render = parser_comparison_year_vs_no_year_grouped_bar_chart(p_outputs)
+        render_year_no_year.placement = RenderPlacement.EXTRAS
 
-        result_page.renders.append(render)
+        render_execution_time: Render = parser_comparison_execution_time(p_outputs)
+        render_execution_time.placement = RenderPlacement.EXTRAS
+
+        render_avg_length: Render = parser_comparison_average_event_lengths([x.parser_name for x in p_outputs], [self.calculate_average_event_length(x) for x in p_outputs])
+        render_avg_length.placement = RenderPlacement.EXTRAS
+
+
+        result_page.renders.append(render_year_no_year)
+        result_page.renders.append(render_execution_time)
+        result_page.renders.append(render_avg_length)
+
         result_page.flavor_text = self.generate_common_input_description()
         return result_page
 
@@ -96,6 +106,7 @@ class ParserComparisonService:
 
 
         return html_builder.build()
+
 
 
 

@@ -93,7 +93,10 @@ def events_per_year_bubble_mpl(parser_output:ParserOutput, group_size=0) -> Rend
     return get_matplotlib_as_bytes(plt)
 
 
-def parser_comparison_year_vs_no_year_grouped_bar_chart(parser_outputs: List[ParserOutput]):
+barchart_column_color_primary = "cyan"
+barchart_column_color_secondary = "pink"
+
+def parser_comparison_year_vs_no_year_grouped_bar_chart(parser_outputs: List[ParserOutput]): #barchart
     class_names = [parser.parser_name for parser in parser_outputs]
     num_year_temporals = [len(parser.content) for parser in parser_outputs]
     num_none_year_temporals = [len(parser.content_no_years) for parser in parser_outputs]
@@ -103,10 +106,13 @@ def parser_comparison_year_vs_no_year_grouped_bar_chart(parser_outputs: List[Par
     r1 = np.arange(len(class_names))
     r2 = [x + bar_width for x in r1]
 
-    plt.bar(r1, num_year_temporals, color='b', width=bar_width, edgecolor='grey', label='Year Temporal Entities')
-    plt.bar(r2, num_none_year_temporals, color='r', width=bar_width, edgecolor='grey', label='No-Year Temporal Entities')
+    rects = plt.bar(r1, num_year_temporals, color=barchart_column_color_primary, width=bar_width, edgecolor='grey', label='Year Temporal Entities')
+    rects2 = plt.bar(r2, num_none_year_temporals, color=barchart_column_color_secondary, width=bar_width, edgecolor='grey', label='No-Year Temporal Entities')
 
-    plt.xlabel('Class Names', fontweight='bold')
+    autolabel_barchart_columns(plt, rects)
+    autolabel_barchart_columns(plt, rects2)
+
+    plt.xlabel('Parsers', fontweight='bold')
     plt.ylabel('Totals', fontweight='bold')
     plt.title('Comparison of year vs no-year temporals', fontweight='bold')
     plt.xticks([r + bar_width/2 for r in range(len(class_names))], class_names, rotation=45)
@@ -114,3 +120,53 @@ def parser_comparison_year_vs_no_year_grouped_bar_chart(parser_outputs: List[Par
     plt.tight_layout()
 
     return get_matplotlib_as_bytes(plt)
+
+
+def parser_comparison_execution_time(parser_outputs: List[ParserOutput]): #barchart
+    class_names = [parser.parser_name for parser in parser_outputs]
+    execution_times = [parser.elapsed_time for parser in parser_outputs]
+
+    bar_width = 0.35
+    r1 = np.arange(len(class_names))
+
+    rects = plt.bar(r1, execution_times, color=barchart_column_color_primary, width=bar_width, edgecolor='grey', label='Execution time')
+    autolabel_barchart_columns(plt,rects)
+
+    plt.xlabel('Parsers', fontweight='bold')
+    plt.ylabel('Time(s)', fontweight='bold')
+    plt.title('Execution time', fontweight='bold')
+    plt.xticks([r + bar_width/2 for r in range(len(class_names))], class_names, rotation=45)
+  
+    plt.tight_layout()
+
+    return get_matplotlib_as_bytes(plt)
+
+
+def parser_comparison_average_event_lengths(class_names, average_lengths): #barchart
+    bar_width = 0.35
+    r1 = np.arange(len(class_names))
+
+    rects = plt.bar(r1, average_lengths, color=barchart_column_color_primary, width=bar_width, edgecolor='grey', label='Execution time')
+    autolabel_barchart_columns(plt,rects)
+
+    plt.xlabel('Parsers', fontweight='bold')
+    plt.ylabel('Average Event Length', fontweight='bold')
+    plt.title('Average Event Length', fontweight='bold')
+
+    plt.xticks([r + bar_width/2 for r in range(len(class_names))], class_names, rotation=45)
+
+    plt.tight_layout()
+
+    return get_matplotlib_as_bytes(plt)
+
+
+def autolabel_barchart_columns(plot, rectangles):
+    downwards_offset = 10 # percentage but prob wont work for very low values?
+
+    for rect in rectangles:
+        height = rect.get_height()
+        plt.annotate(f'{int(height)}', 
+                    xy=(rect.get_x() + rect.get_width() / 2, height - int(height/downwards_offset)),  
+                    xytext=(0, 3), 
+                    textcoords="offset points",
+                    ha='center', va='bottom')

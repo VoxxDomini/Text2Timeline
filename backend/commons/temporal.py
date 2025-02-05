@@ -1,12 +1,14 @@
 from enum import Enum
 from typing import Any
-
+import datetime
 
 class TemporalEntityType(Enum):
     WITH_YEAR = 1,
     NO_YEAR = 2
 
 class TemporalEntity(object):
+    enable_creation_timestamps = False
+
     def __init__(self):
         self._order : int = -1
         self._entity_type : TemporalEntityType = TemporalEntityType.WITH_YEAR
@@ -19,6 +21,9 @@ class TemporalEntity(object):
         # Experimental, to be used for NO_YEAR types in an attempt to gather more context
         self._year_before = ""
         self._year_after = ""
+
+        if self.enable_creation_timestamps:
+            self._creation_timestamp = datetime.datetime.now() # this probably wont be 100% accurate but i'll avoid adding extra logic to parsers
 
     @property
     def event(self):
