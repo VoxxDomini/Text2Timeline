@@ -1,18 +1,51 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row"><div class="col-xs-12 col-md-6 offset-md-3">
+<div class="row">
+  <div class="col-xs-12 col-md-6 offset-md-3">
     <h1>Submit Text or File</h1>
     <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
-        <p>{{ form.text_area.label }}<br>{{ form.text_area(style="width:100%;") }}</p>
-        <p>{{ form.file_upload.label }}<br>{{ form.file_upload() }}</p>
-        <div>
-          {{ form.parser_selection.label}}<br>
-          {{ form.parser_selection(style="width:100%;")}}
-        </div>
-        <br>
-        <p>{{ form.submit(class="btn btn-primary btn-block", style="width:100%;") }}</p>
+      {{ form.hidden_tag() }}
+      <p>{{ form.text_area.label }}<br>{{ form.text_area(style="width:100%;") }}</p>
+      <p>{{ form.file_upload.label }}<br>{{ form.file_upload() }}</p>
+
+      
+        <input type="radio" name="select_type" id="single_select" value="generate" checked>
+        <label for="single_select">Generate Timeline</label>
+        <input type="radio" name="select_type" id="multi_select" value="compare">
+        <label for="multi_select">Compare Parsers</label>
+      
+
+      <div>
+        {{ form.parser_selection.label}}<br>
+
+        <select id="parser_selection" name="parser_selection" style="width:100%;">
+          {% for value, label in form.parser_selection.choices %}
+              <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+
+      </div>
+
+      <br>
+      <p>{{ form.submit(class="btn btn-primary btn-block", style="width:100%;") }}</p>
     </form>
-  </div></div>
+  </div>
+</div>
+
+<script>
+  const singleSelectRadio = document.getElementById("single_select");
+  const multiSelectRadio = document.getElementById("multi_select");
+  const parserSelect = document.getElementById("parser_selection");
+
+  singleSelectRadio.addEventListener("change", function() {
+    parserSelect.multiple = false;
+  });
+
+  multiSelectRadio.addEventListener("change", function() {
+    parserSelect.multiple = true;
+  });
+</script>
+
+
 {% endblock %}

@@ -2,7 +2,8 @@ from math import log
 from backend.commons.parser_commons import ParserInput, ParserOutput
 from backend.flask.models.app_templated_models import Render, ResultPageModel
 from backend.renderers.base_renderer import RendererOutputType
-from backend.services import parserservice
+from backend.services import parser_comparison_service, parserservice
+from backend.services.parser_comparison_service import ParserComparisonService
 from . import app
 from . import parser_service, render_service, result_builder
 from . import LoginForm, TextOrFileForm
@@ -29,30 +30,26 @@ def get_and_parse():
             flash("Please provide either text or a file.", "error")
         elif text_or_file_form.text_area.data and text_or_file_form.file_upload.data:
             flash("Please provide only one: either text or a file.", "error")
+
+
+        selected_parser = "ERROR_NOT_SET"
+        if text_or_file_form.text_area.data:
+            input_text = text_or_file_form.text_area.data
         else:
-            selected_parser = "ERROR_NOT_SET"
-            if text_or_file_form.text_area.data:
-                # Text area input
-                input_text = text_or_file_form.text_area.data
-            else:
-                # Uploaded input
-                file = text_or_file_form.file_upload.data
+            file = text_or_file_form.file_upload.data
+            input_text = file.read().decode("utf-8")
 
-                # TODO add option to keep user uploads
-                # Example:
-                """
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], file)
-                file.save(filepath)
+        selected_mode = request.form.get("select_type")
 
-                with open(filepath, 'r') as f:
-                    input_text = f.read()
-
-                """
-                input_text = file.read().decode("utf-8")
-                
+        # TODO extract modes somewhere and clean up the controllers
+        if selected_mode == "compare":
+            selected_parsers = request.form.getlist('parser_selection')
+            return compare_parsers(input_text, selected_parsers)
+        elif selected_mode == "generate":
             selected_parser = text_or_file_form.parser_selection.data
             return parse(input_text, selected_parser)
+
+
     return render_template('input.html', form=text_or_file_form)
 
 
@@ -68,6 +65,14 @@ def parse(input_text, parser):
     result_model : ResultPageModel = result_builder.build_no_batching(ParserInput(input_text), parser, parser_service, render_service)
     
     return render_template('results.html', results=result_model)
+
+
+def compare_parsers(input_text, parsers):
+    parser_comparison_service = ParserComparisonService(parser_service)
+    parser_comparison_service.parse_and_compare(parsers, input_text)
+    result_model: ResultPageModel = parser_comparison_service.build_result_page_model()
+    print("???????????????????????????????", len(result_model.renders))
+    return render_template('compare_parsers.html', results=result_model)
 
 
 """ @app.route('/login', methods=['GET', 'POST'])

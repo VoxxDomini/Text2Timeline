@@ -87,7 +87,7 @@ class MPLRenderer(BaseRenderer):
             names.append(formatted)
             annotation_wrappers.append(wrapped)
             
-
+        # this was written in the first prototype and still works TODO unpack this into something readable
         names, dates = zip(*((name, date) for name, date in zip(names, dates) if int(date.year) > inter))
         
         if self.use_old_plot_algo:
@@ -97,7 +97,7 @@ class MPLRenderer(BaseRenderer):
     
         fig, ax = plt.subplots(figsize=(70, 10))
 
-        ax.vlines(dates, 0, levels, color="tab:red")  # The vertical stems.
+        ax.vlines(dates, 0, levels, color="tab:red",  alpha=0.5, zorder=1)  # The vertical stems.
 
         ax.plot(dates, np.zeros_like(dates), "-o",
                 color="k", markerfacecolor="w")  # Baseline and markers on it.
@@ -130,7 +130,7 @@ class MPLRenderer(BaseRenderer):
                 ax.annotate(r, xy=(d, l),
                             xytext=(2, np.sign(l)*3), textcoords="offset points",
                             horizontalalignment="left",
-                            verticalalignment="center" if l > 0 else "top"
+                            verticalalignment="center" if l > 0 else "top", zorder=10
                             )
 
             if l > 1:
@@ -215,7 +215,7 @@ class MPLRenderer(BaseRenderer):
         if len(text) > self._MAX_LINE_LENGTH:
             self._text_wrapper.max_lines = self._MAX_LINE_LENGTH
             formatted_text = self._text_wrapper.fill(text)
-            wrapped_annotation.height = formatted_text.count("\n")
+            wrapped_annotation.height = formatted_text.count("\n") + 1
             wrapped_annotation.width = self._MAX_LINE_LENGTH
             return formatted_text, wrapped_annotation
         else:
@@ -270,6 +270,10 @@ class MPLRenderer(BaseRenderer):
         number_of_stacked_dates = 0
         stacked_date_extra_padding = 2
 
+        under_counter = 0
+        under_max = 5
+        under_gap = int(max_height/under_max)
+
         level_map = {}
 
         for date, text_info in zip(dates_numeric, annotation_wrappers):
@@ -298,8 +302,12 @@ class MPLRenderer(BaseRenderer):
                         current += padding
                         current += number_of_stacked_dates * stacked_date_extra_padding
                         min_c += 1
-                        if current > max_height: # edge case here but its rare, eventually fix comparing minus switches to only other minuses
-                            current = random.randint(base_level, 30) # randomly chosen 
+                        if current > max_height: 
+                            under_counter += 1
+                            if under_counter > under_max:
+                                under_counter = 0
+                                
+                            current = base_level + (under_counter*under_gap) + text_info.height
                             switch *= -1
                             break
                 #print(f"GL2 {date} was incremented {min_c} times")
@@ -325,10 +333,10 @@ class MPLRenderer(BaseRenderer):
         if len(lmap_keys) == 0:
             return []
 
-        # iterate backwards no more than 3 elements, why is python like this
+        # iterate backwards no more than lookbehind_range elements, why is python like this
         for i in range(len(lmap_keys) - 1, len(lmap_keys) - (lookbehind_range+1), -1):
             key = lmap_keys[i]
-            if abs(current-key) > 3:
+            if abs(current-key) > 3: # this is the maximum section distance, larger sections should mean lower this number
                 #print(f"Breaking because current {current} too far from last {key} at cycle {i}")
                 break
 
@@ -337,7 +345,6 @@ class MPLRenderer(BaseRenderer):
         return level_map_content
 
         
-            
 
     def gl2_are_levels_touching(self, clevel, cheight, pvlevel, pheight):
         if pvlevel - pheight <= clevel:
@@ -345,11 +352,6 @@ class MPLRenderer(BaseRenderer):
             return True
 
         return False
-
-    def gl2_are_widths_touching(self, cdate, pdate, interval):
-        # i'm going to assume that a distance
-        # of 60 max line width is around 2 intervals
-        return pdate - cdate < interval * 2
 
     def gl2_upsert_dict(self, dict, key, val):
         if key in dict:

@@ -27,6 +27,7 @@ import time
 
 class ResultBuilder():
     gallery_render_mode : RendererPaginationSetting = RendererPaginationSetting.PAGES
+    #gallery_render_mode : RendererPaginationSetting = RendererPaginationSetting.SINGLE_IMAGE
 
     def __init__(self):
         pass

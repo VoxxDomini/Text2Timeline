@@ -13,7 +13,7 @@ import time
 
 
 
-class ParserService:
+class ParserService: # Singleton for now
     _custom_parsers = {}
     _default_paser_loading = {}
     _threads = []

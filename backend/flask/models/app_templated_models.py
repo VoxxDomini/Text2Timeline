@@ -16,20 +16,21 @@ class RenderPlacement(Enum):
     NOT_SET = 4
 
 class Render():
-    # I'll use this to have additional filtering apart from data type for FE placement
-    placement : RenderPlacement = RenderPlacement.NOT_SET
     
     def __init__(self, data, otype: RendererOutputType):
         self.data = data
         self.type = otype
+        self.placement : RenderPlacement = RenderPlacement.NOT_SET # I'll use this to have additional filtering apart from data type for FE placement
 
 
 class ResultPageModel():
-    renders : List[Render] = []
-    output : ParserOutput
+    
 
     def __init__(self, use_pagination: bool):
         self._use_pagination = use_pagination
+        self.renders : List[Render] = []
+        self.output : ParserOutput
+        self.flavor_text: str = "" # for any FE pages that require a dynamic description, just add here as embedded html
 
     def get_gallery(self):
         bytes = []
