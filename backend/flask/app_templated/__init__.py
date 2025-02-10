@@ -25,8 +25,6 @@ do barebones in-process worker queue to make it REST viable
 still sucks but not enough ram to run multiple instances 
 '''
 parser_service = ParserService()
-# parser_service.load_default_parsers()
-#parser_service.confirm_parsers_loaded()
 
 '''
 These don't actually need to be here but they're getting

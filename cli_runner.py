@@ -6,7 +6,7 @@ from click import parser
 from backend.commons.parser_commons import ParserInput
 from backend.commons.t2t_enums import RendererPaginationSetting
 from backend.renderers.base_renderer import RendererOutputType, RendererSettings
-from backend.services import parserservice, renderservice
+from backend.services import parserservice, renderservice, pipeline_manager_service
 from backend.services.parser_comparison_service import ParserComparisonService
 from backend.commons.utils import word_list_to_string
 from backend.commons.parser_commons import ParserInput
@@ -48,7 +48,8 @@ def compare_parsers_flow():
 
 
 def generate_timeline_flow():
-    parser_service = parserservice.ParserService()
+    pipeline_manager = pipeline_manager_service.PipelineManagerService()
+    parser_service = pipeline_manager.parser_service
 
     selected_parser = ""
 
@@ -73,7 +74,7 @@ def generate_timeline_flow():
 
     parser_input = get_file_as_parser_input()
 
-    parser_output = parser_service.parse_with_selected(parser_input, selected_parser)
+    parser_output = pipeline_manager.run_pipeline_parser_output(parser_input, selected_parser)
 
     possible_selections = ["View", "Export"]
     
