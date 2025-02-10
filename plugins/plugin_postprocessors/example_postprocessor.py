@@ -9,9 +9,10 @@ class example_postprocessor:
         pass
 
     def process(self, parser_output: ParserOutput):
-        x = parser_output.content
+        """ x = parser_output.content
 
         for xx in x:
-            xx.year = "500"
+            xx.year = "500" """
+        pass
 
         

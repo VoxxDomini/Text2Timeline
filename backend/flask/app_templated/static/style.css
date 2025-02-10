@@ -45,8 +45,6 @@ body {
     width: 100%;
     padding: 0px;
     display: none;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
 
 .content.active {
@@ -73,6 +71,8 @@ body {
     padding: 0 10px;
     width:100%;
     height:100%;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .content span:last-child {

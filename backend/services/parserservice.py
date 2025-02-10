@@ -27,7 +27,7 @@ class ParserService: # Singleton for now
         self._default_paser_loading[FLAIR_PARSER_NAME] = lambda : FlairParser()
         self._default_paser_loading[SPACY_PARSER_NAME] = lambda : SpacyParser()
 
-        self._parser_settings.context_radius = 2
+        self._parser_settings.context_radius = 5
 
         self.load_plugin_parsers()
 
@@ -41,16 +41,20 @@ class ParserService: # Singleton for now
         parser3 = SpacyParser()
         log_decorated(":: Spacy loaded")
 
-        settings: ParserSettings = ParserSettings()
-        settings.context_radius = 2
-
-        parser1.settings = settings
-        parser2.settings = settings
-        parser3.settings = settings
+        parser1.settings = self._parser_settings
+        parser2.settings = self._parser_settings
+        parser3.settings = self._parser_settings
 
         self._loaded_parsers[parser1._PARSER_NAME] = parser1
         self._loaded_parsers[parser2._PARSER_NAME] = parser2
         self._loaded_parsers[parser3._PARSER_NAME] = parser3
+
+    def update_parser_settings(self, parser_settings: ParserSettings, parser_name: str) -> None:
+        if parser_name == "all":
+            for x in self._loaded_parsers:
+                self._loaded_parsers[x].settings = parser_settings
+        else:
+            self.get_parser(parser_name).settings = parser_settings
 
 
     def load_plugin_parsers(self) -> None:

@@ -99,8 +99,6 @@ class PipelineManagerService:
     def build_processor_execution_order_list(self, processor_storage_map: Dict):
         ordered_processors = []
         unordered_processors = []
-        
-        print(processor_storage_map)
 
         for k in processor_storage_map:
             if k in self._disabled_keys: #i'd like this to be more generic but kinda tired TODO
