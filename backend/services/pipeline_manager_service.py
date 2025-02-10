@@ -10,6 +10,9 @@ from backend.services.renderservice import RendererService
 '''
 Will manage parser service, settings and plugins execution order
 '''
+
+PROCESSOR_EXECUTION_ORDER_FIELD_NAME = "processor_order"
+
 class PipelineManagerService:
     
     def __init__(self) -> None: 
@@ -30,22 +33,21 @@ class PipelineManagerService:
             parser_input = ParserInput(parser_input)
 
         # Pre Processors
+        pre_processors = self.build_processor_execution_order_list(self._pre_processors)
+        for pp in pre_processors:
+            temp = pp.process(parser_input)
 
-        for k in self._pre_processors.keys():
-            # TODO add order of operations
-            instance = self._pre_processors[k]()
-            temp = instance.process(parser_input)
             if isinstance(temp, ParserInput):
-                parser_input = temp 
+                parser_input = temp
 
         parser_output = self.parser_service.parse_with_selected(parser_input, parser_name)
 
         # Post Processors
 
-        for k in self._post_processors.keys():
-            # TODO add order of operations
-            instance = self._post_processors[k]()
-            temp = instance.process(parser_output)
+        post_processors = self.build_processor_execution_order_list(self._post_processors)
+        for pp in post_processors:
+            temp = pp.process(parser_output)
+
             if isinstance(temp, ParserOutput):
                 parser_output = temp
 
@@ -73,10 +75,35 @@ class PipelineManagerService:
         plugin_name_class_map = plugin_service.load_plugins(plugin_type)
 
         for key, value in plugin_name_class_map.items():
-            storage_map[key] = lambda : value()
+            storage_map[key] = value()
+            t2t_logging.log_info(f"Loaded {key}")
 
         t2t_logging.log_info(f"Loaded {len(storage_map)} {str(plugin_type.value)} plugins")
 
+
+    def build_processor_execution_order_list(self, processor_storage_map: Dict):
+        ordered_processors = []
+        unordered_processors = []
+        
+        print(processor_storage_map)
+
+        for k in processor_storage_map:
+            instance = processor_storage_map[k]
+            if self.get_processor_order_if_present(instance):
+                ordered_processors.append(instance)
+            else:
+                unordered_processors.append(instance)
+
+        ordered_processors = sorted(ordered_processors, key=lambda x: getattr(x, PROCESSOR_EXECUTION_ORDER_FIELD_NAME))
+        ordered_processors.extend(unordered_processors)
+
+        return ordered_processors
+
+    def get_processor_order_if_present(self, processor_instance):
+        try:
+            return getattr(processor_instance, PROCESSOR_EXECUTION_ORDER_FIELD_NAME)
+        except:
+            return None
 
     
         
