@@ -118,6 +118,9 @@ class ResultBuilder():
 
     # Not the intended usage, being used to test gallery modes on the flask app
     def paginate(self, output: ParserOutput, page_size) -> List[ParserOutput]:
+        if len(output.content) <= page_size:
+            return [output]
+
         paginated_content : List[List[TemporalEntity]] = output.get_content_paginated(page_size)
         
         output_pages : List[ParserOutput] = []
