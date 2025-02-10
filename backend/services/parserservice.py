@@ -28,7 +28,6 @@ class ParserService: # Singleton for now
 
         self._parser_settings.context_radius = 2
 
-        # TODO decide whether loading parsers goes here, or gets called explicitly
         self.load_plugin_parsers()
 
     def load_default_parsers(self) -> None: # maybe should be called pre-load? you can still lazy load by get by name

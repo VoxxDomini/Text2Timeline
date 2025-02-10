@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.dates as mdates
 import mplcursors
+import os
 
 from ..commons.utils import get_export_file_path, join_folder_file_names
 
@@ -53,12 +54,18 @@ class MPLRenderer(BaseRenderer):
         if self._output_type == RendererOutputType.LIBRARY_NATIVE:
             self._plot.show()
         elif self._output_type == RendererOutputType.EXPORT_IMAGE_FILE:
-            if len(self.settings.EXPORT_IMAGE_FILE_PATH):
+            if len(self.settings.EXPORT_IMAGE_FILE_PATH) == 0:
                 # TODO custom exceptions
                 raise ValueError("Attempting to save to file path with no path in renderer settings")
 
             #file_path = get_export_file_path(2, "timeline"+str(self._parser_output.current_page)+".png")
             file_path = join_folder_file_names(self.settings.EXPORT_IMAGE_FILE_PATH, "timeline"+str(self._parser_output.current_page)+".png")
+            file_path = os.path.normpath(file_path)
+
+            directory = os.path.dirname(file_path)  
+            if not os.path.exists(directory):
+                os.makedirs(directory)  
+
             self._plot.savefig(file_path)
         elif self._output_type == RendererOutputType.EXPORT_IMAGE_BYTES:
             image_bytes = BytesIO()

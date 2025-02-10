@@ -24,7 +24,7 @@ class ParserSettings(object):
 
 import nltk
 
-# TODO check whether this being here is more efficient as opposed to only in the class 
+
 tokenizer = nltk.data.load('nltk:tokenizers/punkt/english.pickle')
 
 class ParserInput():

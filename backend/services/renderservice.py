@@ -20,6 +20,7 @@ class RendererService():
     def __init__(self) -> None:
         self.renderers[DEFAULT_RENDERER_MPL] = lambda : self.create_mpl_renderer()
         self.renderers[DEFAULT_RENDERER_PLOTLY] = lambda : self.create_plotly_renderer()
+        self.renderers["MPL_INTERACTIVE"] = lambda : self.create_mpl_interactive_renderer()
 
     def create_plotly_renderer(self) -> PlotlyRenderer:
         renderer = PlotlyRenderer()
@@ -32,6 +33,17 @@ class RendererService():
         renderer.output_type = RendererOutputType.EXPORT_IMAGE_BYTES
         renderer.settings = self.create_renderer_settings(renderer._RENDERER_NAME)
         return renderer
+
+    def create_mpl_interactive_renderer(self) -> MPLRenderer:
+        renderer = MPLRenderer()
+        renderer.output_type = RendererOutputType.EXPORT_IMAGE_BYTES
+        renderer.settings = self.create_renderer_settings(renderer._RENDERER_NAME)
+        return renderer
+
+    def renderer_factory(self, renderer_name: str, output_type: RendererOutputType, pagination_settings: RendererPaginationSetting):
+        renderer = self.get_renderer(renderer_name)
+        renderer.output_type = output_type
+        return renderer # TODO LATER
     
     def create_renderer_settings(self, renderer_name: str) -> RendererSettings:
         return RendererSettings()
@@ -74,7 +86,7 @@ class RendererService():
         if renderer.output_type == RendererOutputType.EXPORT_IMAGE_BYTES:
             output : BytesIO = renderer.render()
             output.seek(0)
-            # TODO the data pre-utf8 decode loooks nearly identical but doesnt work, investigate later
+            # the data pre-utf8 decode loooks nearly identical but doesnt work, investigate later
             render.data = base64.b64encode(output.getvalue()).decode("utf-8").replace("\n", "") # this might not be very optimal, check later
             render.type = RendererOutputType.EXPORT_IMAGE_BYTES
         elif renderer.output_type == RendererOutputType.EMBEDDED:

@@ -23,13 +23,14 @@ class HtmlBuilder:
         return self._content
 
 class ParserComparisonService:
-    parser_instances = {}
-    parser_outputs :dict[str, ParserOutput] = {}
+    
     
     def __init__(self, parser_service: ParserService):
         self._parser_service = parser_service
         self._raw_input = None
-        pass
+        self.parser_instances = {}
+        self.parser_outputs :dict[str, ParserOutput] = {}
+        
 
     def _set_raw_input(self, _raw_input: str) -> None:
         self._raw_input = _raw_input

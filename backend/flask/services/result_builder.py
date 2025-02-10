@@ -22,7 +22,8 @@ import time
     architecture can be implemented
 
     -- actually, request multithreading is being handled surprisingly well, making parsers stateless should resolve
-    most concurrency issues for up to a reasonable amount of users
+    most concurrency issues for up to a reasonable amount of users as the file locks don't seem to be causing issues when 
+    running the same model on three different texts concurrently
 '''
 
 class ResultBuilder():
@@ -64,7 +65,6 @@ class ResultBuilder():
     def build_with_batching(self, parser_input, selected_parser, parser_service, render_service, batch_size):
         start_time = time.perf_counter()
 
-        # See which tokenization is better, per batch or total - nvm shouldn't matter
         if selected_parser == allennlp.ALLENNLP_PARSER_NAME:
             parser_input.tokenize()
 
@@ -92,7 +92,7 @@ class ResultBuilder():
         return self.add_extras(result_model, output)
 
     def add_extras(self, result_model: ResultPageModel, parser_output: ParserOutput) -> ResultPageModel:
-        render: Render = events_per_year_bubble_mpl(parser_output, group_size=100)
+        render: Render = events_per_year_bubble_mpl(parser_output, group_size=100) # TODO autocalc group size
         render.placement = RenderPlacement.EXTRAS
         result_model.renders.append(render)
         return result_model
