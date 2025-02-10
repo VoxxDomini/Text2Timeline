@@ -1,5 +1,6 @@
 from torch.autograd.grad_mode import F
 from backend.commons.parser_commons import ParserInput, ParserOutput, ParserSettings
+from backend.commons.t2t_enums import PluginType
 from backend.parsers.base import BaseParser
 from ..commons.t2t_logging import log_decorated, log_error, log_info
 
@@ -57,7 +58,7 @@ class ParserService: # Singleton for now
         # so we can use file name as plugin name and class reference as value
         # so we can have same lazy loading as default plugins
         # why am I saying we?
-        plugin_name_class_map = plugin_service.load_custom_parsers()
+        plugin_name_class_map = plugin_service.load_plugins(PluginType.PLUGIN_PARSER)
 
         # Works, should TODO add validation to plugin service
         # that checks that all abstract class methods are implemented

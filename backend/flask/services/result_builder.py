@@ -27,14 +27,13 @@ import time
 '''
 
 class ResultBuilder():
-    gallery_render_mode : RendererPaginationSetting = RendererPaginationSetting.PAGES
-    #gallery_render_mode : RendererPaginationSetting = RendererPaginationSetting.SINGLE_IMAGE
-
-    def __init__(self):
+    def __init__(self, gallery_render_mode: RendererPaginationSetting):
+        self.gallery_render_mode = gallery_render_mode
         pass
 
-    def build_no_batching(self, parser_input, selected_parser, parser_service : ParserService, render_service : RendererService) -> ResultPageModel:
-        output: ParserOutput = parser_service.parse_with_selected(parser_input, selected_parser)
+    def build_no_batching(self, parser_output: ParserOutput, render_service : RendererService) -> ResultPageModel:
+        output: ParserOutput = parser_output
+
         # Trying out dynamic pages for mpl, will render individually
         # render_list = render_service.render_with_all(output)
         render_list = []

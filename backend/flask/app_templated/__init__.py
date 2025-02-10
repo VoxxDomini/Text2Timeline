@@ -1,5 +1,7 @@
 from flask import Flask
 import matplotlib
+
+from backend.services.pipeline_manager_service import PipelineManagerService
 from .config import Config
 from ...services.parserservice import ParserService
 from ...services.renderservice import RendererService
@@ -24,14 +26,9 @@ having it behave as once-per-request would make it much slower
 do barebones in-process worker queue to make it REST viable
 still sucks but not enough ram to run multiple instances 
 '''
-parser_service = ParserService()
 
-'''
-These don't actually need to be here but they're getting
-dependency injected anyway just make sure no new state per request
-'''
-render_service = RendererService()
-result_builder = ResultBuilder()
+pipeline_manager: PipelineManagerService = PipelineManagerService()
+parser_service = pipeline_manager.parser_service
 
 app = Flask(__name__)
 app.config.from_object(Config)

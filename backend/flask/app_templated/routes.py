@@ -5,7 +5,7 @@ from backend.renderers.base_renderer import RendererOutputType
 from backend.services import parser_comparison_service, parserservice
 from backend.services.parser_comparison_service import ParserComparisonService
 from . import app
-from . import parser_service, render_service, result_builder
+from . import parser_service, pipeline_manager
 from . import LoginForm, TextOrFileForm
 
 from ...commons.t2t_logging import log_class_methods, log_decorated, log_info
@@ -53,21 +53,15 @@ def get_and_parse():
     return render_template('input.html', form=text_or_file_form)
 
 
-def parse(input_text, parser):
-    # Flask/Python usually prefer instance per request
-    # but making a new instance of a parser reloads the model
-    # there's probably a workaround but have not found it yet 
-
-    # result_model_old : ResultPageModel = result_builder.build_no_batching(ParserInput(input_text), parser, parser_service, render_service)
-    # result_model : ResultPageModel = result_builder.build_with_batching(ParserInput(input_text), parser, parser_service, render_service, batch_size=200)
-    # log_decorated("COMPARISON non-batching:" + str(result_model_old.output.elapsed_time) + " VS batching: " + str(result_model.output.elapsed_time))
-    
-    result_model : ResultPageModel = result_builder.build_no_batching(ParserInput(input_text), parser, parser_service, render_service)
-    
+def parse(input_text, parser):    
+    result_model : ResultPageModel = pipeline_manager.run_pipeline_result_page_model(input_text, parser)
     return render_template('results.html', results=result_model)
 
 
 def compare_parsers(input_text, parsers):
+    # For now, running this without the pipeline manager as I'm not sure whether I want
+    # plugins affected parser stats
+
     parser_comparison_service = ParserComparisonService(parser_service)
     parser_comparison_service.parse_and_compare(parsers, input_text)
     result_model: ResultPageModel = parser_comparison_service.build_result_page_model()
@@ -88,5 +82,5 @@ def login():
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
-    # return redirect(url_for("get_and_parse"))
+    #return render_template('index.html')
+    return redirect(url_for("get_and_parse"))

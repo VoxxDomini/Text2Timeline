@@ -3,7 +3,7 @@
 from backend.commons.parser_commons import ParserOutput
 
 
-class example_postprocessor:
+class example_postprocessorX:
     def __init__(self):
         pass
 
