@@ -7,12 +7,14 @@ from backend.flask.services.result_builder import ResultBuilder
 from backend.services.parserservice import ParserService
 from backend.services import plugin_service
 from backend.services.renderservice import RendererService
+from typing import List
 
 '''
 Will manage parser service, settings and plugins execution order
 '''
 
 PROCESSOR_EXECUTION_ORDER_FIELD_NAME = "processor_order"
+PLUGIN_DESCRIPTION_FIELD_NAME = "plugin_description"
 
 class PipelineManagerService:
     
@@ -29,6 +31,17 @@ class PipelineManagerService:
 
         self.load_plugins()
 
+    def get_plugin_by_name(self, name: str):
+        if name in self._pre_processors:
+            return self._pre_processors[name]
+        elif name in self._post_processors:
+            return self._post_processors[name]
+        elif name in self.parser_service._custom_parsers:
+            return self.parser_service._custom_parsers[name]
+        elif name in self._gallery_extras:
+            return self._gallery_extras[name]
+
+        return None
 
     def run_pipeline_parser_output(self, parser_input, parser_name) -> ParserOutput:
         if isinstance(parser_input, ParserInput) == False:
@@ -122,14 +135,30 @@ class PipelineManagerService:
             return None
 
     
-        
-        
+
 def get_plugin_information_model(pipeline_manager: PipelineManagerService):
     plugin_info = PluginInformationModel()
 
-    plugin_info.parsers = list(pipeline_manager.parser_service._custom_parsers.keys())
-    plugin_info.gallery_extras = list(pipeline_manager._gallery_extras.keys())
-    plugin_info.post_processors = list(pipeline_manager._post_processors.keys())
-    plugin_info.pre_processors = list(pipeline_manager._pre_processors.keys())
+    plugin_info.parsers = anti_ugly_wrapper(pipeline_manager.parser_service._custom_parsers, pipeline_manager)
+    plugin_info.gallery_extras = anti_ugly_wrapper(pipeline_manager._gallery_extras, pipeline_manager)
+    plugin_info.post_processors = anti_ugly_wrapper(pipeline_manager._post_processors, pipeline_manager)
+    plugin_info.pre_processors = anti_ugly_wrapper(pipeline_manager._pre_processors, pipeline_manager)
 
     return plugin_info
+
+
+def anti_ugly_wrapper(storage_map: Dict, pipeline_manager):
+    return list(map(lambda x: add_plugin_description_if_present(pipeline_manager, x), list(storage_map.keys())))
+
+def add_plugin_description_if_present(pipeline_manager: PipelineManagerService, plugin_name):
+    result = (plugin_name, "")
+
+    instance = pipeline_manager.get_plugin_by_name(plugin_name)
+
+    try:
+        description = getattr(instance, PLUGIN_DESCRIPTION_FIELD_NAME)
+        result = (plugin_name, description)
+    except:
+        pass
+
+    return result
