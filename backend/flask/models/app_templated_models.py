@@ -56,3 +56,13 @@ class ResultPageModel():
 
     def get_embedded_renders(self):
         return [i.data for i in self.renders if i.type == RendererOutputType.EMBEDDED]
+
+
+class PluginInformationModel():
+    def __init__(self):
+        self.pre_processors = []
+        self.post_processors = []
+        self.gallery_extras = []
+        self.parsers = []
+        pass
+

@@ -2,6 +2,7 @@ from typing import Dict, Union
 from backend.commons.parser_commons import ParserInput, ParserOutput
 from backend.commons import t2t_logging
 from backend.commons.t2t_enums import PluginType, RendererPaginationSetting
+from backend.flask.models.app_templated_models import PluginInformationModel, Render, RenderPlacement, ResultPageModel
 from backend.flask.services.result_builder import ResultBuilder
 from backend.services.parserservice import ParserService
 from backend.services import plugin_service
@@ -23,7 +24,8 @@ class PipelineManagerService:
 
         self._pre_processors = {}
         self._post_processors = {}
-        self._gallery_extras = {}
+        self._gallery_extras = {} # pipeline manager is currently a singleton, keep in mind :)
+        self._disabled_keys = []
 
         self.load_plugins()
 
@@ -60,8 +62,20 @@ class PipelineManagerService:
         result_builder = ResultBuilder(RendererPaginationSetting.PAGES)
         render_service = RendererService()
 
-        result_page = result_builder.build_no_batching(parser_output, render_service)
+        result_page: ResultPageModel = result_builder.build_no_batching(parser_output, render_service)
+        
+        self.append_plugin_gallery_extras(result_page)
         return result_page
+
+
+    def append_plugin_gallery_extras(self, result_page: ResultPageModel):
+        for k in self._gallery_extras:
+            if k in self._disabled_keys:
+                continue
+
+            new_render: Render = self._gallery_extras[k](result_page.output)
+            new_render.placement = RenderPlacement.EXTRAS
+            result_page.renders.append(new_render)
 
 
     def load_plugins(self) -> None:
@@ -69,6 +83,7 @@ class PipelineManagerService:
         
         self.load_and_save_plugin_type(PluginType.PLUGIN_PREPROCESSOR, self._pre_processors)
         self.load_and_save_plugin_type(PluginType.PLUGIN_POSTPROCESSOR, self._post_processors)
+        self.load_and_save_plugin_type(PluginType.PLUGIN_GALLERYEXTRA, self._gallery_extras)
 
 
     def load_and_save_plugin_type(self, plugin_type: PluginType, storage_map: Dict) -> None:
@@ -88,6 +103,9 @@ class PipelineManagerService:
         print(processor_storage_map)
 
         for k in processor_storage_map:
+            if k in self._disabled_keys: #i'd like this to be more generic but kinda tired TODO
+                continue
+
             instance = processor_storage_map[k]
             if self.get_processor_order_if_present(instance):
                 ordered_processors.append(instance)
@@ -108,4 +126,12 @@ class PipelineManagerService:
     
         
         
-    
+def get_plugin_information_model(pipeline_manager: PipelineManagerService):
+    plugin_info = PluginInformationModel()
+
+    plugin_info.parsers = list(pipeline_manager.parser_service._custom_parsers.keys())
+    plugin_info.gallery_extras = list(pipeline_manager._gallery_extras.keys())
+    plugin_info.post_processors = list(pipeline_manager._post_processors.keys())
+    plugin_info.pre_processors = list(pipeline_manager._pre_processors.keys())
+
+    return plugin_info

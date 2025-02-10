@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <button id="download-timeline-button" class="btn btn-primary">Download Timeline Images</button>
+        <button id="download-csv" class="btn btn-primary">Download CSV</button>
+    </div>
+</div>
+<hr>
+
 <div class="gallery-container" id="gallery-container">
     {% for imagebytes in results.get_gallery() %}
     <img id="gallery-image-{{loop.index}}" class="gallery-image">
@@ -60,8 +68,6 @@
     {{embedded | safe}}
     {% endfor %}
 </div>
-<hr>
-<button id="download-timeline-button" class="btn btn-primary">Download Timeline Images</button>
 <hr>
 <div class="row-entry">
     <span class="order"> Order in which the text was encountered while parsing </span>

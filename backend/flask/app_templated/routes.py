@@ -4,6 +4,7 @@ from backend.flask.models.app_templated_models import Render, ResultPageModel
 from backend.renderers.base_renderer import RendererOutputType
 from backend.services import parser_comparison_service, parserservice
 from backend.services.parser_comparison_service import ParserComparisonService
+from backend.services.pipeline_manager_service import get_plugin_information_model
 from . import app
 from . import parser_service, pipeline_manager
 from . import LoginForm, TextOrFileForm
@@ -28,8 +29,11 @@ def get_and_parse():
     if text_or_file_form.validate_on_submit():
         if not text_or_file_form.text_area.data and not text_or_file_form.file_upload.data:
             flash("Please provide either text or a file.", "error")
+            return redirect(url_for("get_and_parse"))
         elif text_or_file_form.text_area.data and text_or_file_form.file_upload.data:
             flash("Please provide only one: either text or a file.", "error")
+            return redirect(url_for("get_and_parse"))
+
 
 
         selected_parser = "ERROR_NOT_SET"
@@ -47,13 +51,18 @@ def get_and_parse():
             return compare_parsers(input_text, selected_parsers)
         elif selected_mode == "generate":
             selected_parser = text_or_file_form.parser_selection.data
-            return parse(input_text, selected_parser)
+            return parse(input_text, selected_parser, request)
 
 
-    return render_template('input.html', form=text_or_file_form)
+    return render_template('input.html', form=text_or_file_form, plugin_info = get_plugin_information_model(pipeline_manager))
 
 
-def parse(input_text, parser):    
+def parse(input_text, parser, request):
+    disabled_plugins = request.form.getlist("disabled_plugins")
+    
+    if disabled_plugins:
+        pipeline_manager._disabled_keys = disabled_plugins
+
     result_model : ResultPageModel = pipeline_manager.run_pipeline_result_page_model(input_text, parser)
     return render_template('results.html', results=result_model)
 
@@ -65,7 +74,6 @@ def compare_parsers(input_text, parsers):
     parser_comparison_service = ParserComparisonService(parser_service)
     parser_comparison_service.parse_and_compare(parsers, input_text)
     result_model: ResultPageModel = parser_comparison_service.build_result_page_model()
-    print("???????????????????????????????", len(result_model.renders))
     return render_template('compare_parsers.html', results=result_model)
 
 

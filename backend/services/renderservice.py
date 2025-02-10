@@ -96,37 +96,3 @@ class RendererService():
             
         return render
 
-
-
-
-# TODO finish abstractified version of this to support loading renderers at runtime
-""" class Renderservice():
-    renderers = {}
-
-    def __init__(self) -> None:
-        self.renderers["mpl"] = lambda x : create_renderer(x, self.create_renderer_settings(x), RendererOutputType.EXPORT_IMAGE, MPLRenderer)
-        self.renderers["plotly"] = lambda x: create_renderer("plotly", RendererSettings(), RendererOutputType.EMBEDDED, PlotlyRenderer)
-
-    def get_renderer(self, renderer_name: str) -> BaseRenderer:
-        if renderer_name not in self.renderers:
-            raise ValueError("Invalid renderer selected")
-
-        return self.renderers[renderer_name]()
-
-    def get_renderer_names(self) -> List[str]:
-        return list(self.renderers.keys())
-
-    def create_renderer_settings(self, renderer_name: str) -> RendererSettings:
-        return RendererSettings()
-
-    def add_renderer(self, renderer_name: str, lambda_renderer: Callable[[], BaseRenderer], lambda_settings: Callable[[], RendererSettings]) -> None:
-        if renderer_name in self.renderers or renderer_name in self.renderer_settings:
-            raise ValueError("A renderer with this name already exists")
-        
-        self.renderers[renderer_name] = lambda_renderer
-        self.renderer_settings[renderer_name] = lambda_settings """
-
-
-
-
-

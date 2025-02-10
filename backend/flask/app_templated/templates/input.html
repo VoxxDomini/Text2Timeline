@@ -3,25 +3,25 @@
 {% block content %}
 <div class="row">
   <div class="col-xs-12 col-md-6 offset-md-3">
-    <h1>Submit Text or File</h1>
+    <h1 style="text-align: center;">Text2Timeline Dashboard</h1>
     <form method="POST" enctype="multipart/form-data">
       {{ form.hidden_tag() }}
       <p>{{ form.text_area.label }}<br>{{ form.text_area(style="width:100%;") }}</p>
       <p>{{ form.file_upload.label }}<br>{{ form.file_upload() }}</p>
 
-      
-        <input type="radio" name="select_type" id="single_select" value="generate" checked>
-        <label for="single_select">Generate Timeline</label>
-        <input type="radio" name="select_type" id="multi_select" value="compare">
-        <label for="multi_select">Compare Parsers</label>
-      
+
+      <input type="radio" name="select_type" id="single_select" value="generate" checked>
+      <label for="single_select">Generate Timeline</label>
+      <input type="radio" name="select_type" id="multi_select" value="compare">
+      <label for="multi_select">Compare Parsers</label>
+
 
       <div>
         {{ form.parser_selection.label}}<br>
 
         <select id="parser_selection" name="parser_selection" style="width:100%;">
           {% for value, label in form.parser_selection.choices %}
-              <option value="{{ value }}">{{ label }}</option>
+          <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
         </select>
 
@@ -29,8 +29,55 @@
 
       <br>
       <p>{{ form.submit(class="btn btn-primary btn-block", style="width:100%;") }}</p>
-    </form>
+
   </div>
+
+  <br>
+  <hr>
+
+  <div class="row" style="text-align: center;">
+    <div class="col-xs-12 col-md-6 offset-md-3">
+      <div>
+        <h2><strong>Parser</strong> plugins</h2>
+        {% for plugin_name in plugin_info.parsers %}
+        <p>{{ plugin_name }}</p>
+        {% endfor %}
+      </div>
+      <div>
+        <h2><strong>Pre Processor</strong> plugins</h2>
+        {% for plugin_name in plugin_info.pre_processors %}
+        <div>
+          <span>{{ plugin_name }}</span>
+          <input type="checkbox" id="disabled_{{ plugin_name }}" name="disabled_plugins" value="{{ plugin_name }}">
+          <label for="disabled_{{ plugin_name }}">Disable</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div>
+        <h2><strong>Post Processor</strong> plugins</h2>
+        {% for plugin_name in plugin_info.post_processors %}
+
+        <div>
+          <span>{{ plugin_name }}</span>
+          <input type="checkbox" id="disabled_{{ plugin_name }}" name="disabled_plugins" value="{{ plugin_name }}">
+          <label for="disabled_{{ plugin_name }}">Disable</label>
+        </div>
+        {% endfor %}
+      </div>
+      <div>
+        <h2><strong>Gallery Extra</strong> plugins</h2>
+        {% for plugin_name in plugin_info.gallery_extras %}
+        <div>
+          <span>{{ plugin_name }}</span>
+          <input type="checkbox" id="disabled_{{ plugin_name }}" name="disabled_plugins" value="{{ plugin_name }}">
+          <label for="disabled_{{ plugin_name }}">Disable</label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  </form>
+
 </div>
 
 <script>
@@ -38,11 +85,11 @@
   const multiSelectRadio = document.getElementById("multi_select");
   const parserSelect = document.getElementById("parser_selection");
 
-  singleSelectRadio.addEventListener("change", function() {
+  singleSelectRadio.addEventListener("change", function () {
     parserSelect.multiple = false;
   });
 
-  multiSelectRadio.addEventListener("change", function() {
+  multiSelectRadio.addEventListener("change", function () {
     parserSelect.multiple = true;
   });
 </script>
