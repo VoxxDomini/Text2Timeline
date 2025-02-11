@@ -1,18 +1,21 @@
-import os
 import importlib
 import inspect
+import os
 import sys
 
 from matplotlib.pyplot import cla
 
-from ..parsers.base import BaseParser
-from ..commons.t2t_logging import log_decorated, log_error, log_info
 from ..commons.t2t_enums import PluginType
+from ..commons.t2t_logging import log_decorated, log_error, log_info
+from ..parsers.base import BaseParser
 
 CREATE_PLUGIN_DIRECTORY_IF_NOT_EXISTS = True
 
 
-def load_plugins(plugin_type: PluginType): # root/plugins/parsers hardcoded path
+# Would be pretty cool to add a serialization/deserialization and loading from any bytestream
+# to allow plugin uploading downloading TODO
+
+def load_plugins(plugin_type: PluginType): # path generated from root/plugins + plugin type enum
     plugins = {}
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     plugin_dir = os.path.join(project_root, "plugins", str(plugin_type.value))

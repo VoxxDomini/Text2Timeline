@@ -94,3 +94,9 @@ class TemporalEntity(object):
             return str(self._order) + " | " + str(self._year_before) + "|" + self.date + " :: (" + self.context_before + ") " + str(self._event)
         else:
             return "MISSING IMPLEMENTATION FOR " + str(self.entity_type)
+
+    def toggle_entity_type(self) -> None:
+        if self.entity_type == TemporalEntityType.WITH_YEAR:
+            self.entity_type = TemporalEntityType.NO_YEAR
+        elif self.entity_type == TemporalEntityType.NO_YEAR:
+            self.entity_type = TemporalEntityType.WITH_YEAR

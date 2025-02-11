@@ -4,7 +4,7 @@ from backend.commons.parser_commons import ParserOutput
 
 
 class example_postprocessor:
-    plugin_description = "Will reprocess the parser outputs using spaCy to properly resolve sentences with multiple dates, trying to pick the most suitable one"
+    plugin_description = "This is an example postprocessor, it does nothing!"
 
     def __init__(self):
         self.processor_order = 5

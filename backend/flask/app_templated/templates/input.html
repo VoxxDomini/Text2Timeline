@@ -40,7 +40,7 @@
       <div>
         <h2><strong>Parser</strong> plugins</h2>
         {% for plugin_name in plugin_info.parsers %}
-        <p>{{ plugin_name[0] }}</p>
+        <p style="color:cyan">{{ plugin_name[0] }}</p>
         <span><i>{{ plugin_name[1] }}</i></span>
         <br>
         {% endfor %}
@@ -50,7 +50,7 @@
         <h2><strong>Pre Processor</strong> plugins</h2>
         {% for plugin_name in plugin_info.pre_processors %}
         <div>
-          <span>{{ plugin_name[0] }}</span>
+          <span style="color:cyan">{{ plugin_name[0] }}</span>
           <p><i>{{ plugin_name[1] }}</i></p>
           <input type="checkbox" id="disabled_{{ plugin_name[0] }}" name="disabled_plugins"
             value="{{ plugin_name[0] }}">
@@ -65,7 +65,7 @@
         {% for plugin_name in plugin_info.post_processors %}
 
         <div>
-          <span>{{ plugin_name[0] }}</span>
+          <span style="color:cyan">{{ plugin_name[0] }}</span>
           <p><i>{{ plugin_name[1] }}</i></p>
           <input type="checkbox" id="disabled_{{ plugin_name[0] }}" name="disabled_plugins"
             value="{{ plugin_name[0] }}">
@@ -79,7 +79,7 @@
         <h2><strong>Gallery Extra</strong> plugins</h2>
         {% for plugin_name in plugin_info.gallery_extras %}
         <div>
-          <span>{{ plugin_name[0] }}</span>
+          <span style="color:cyan">{{ plugin_name[0] }}</span>
           <p><i>{{ plugin_name[1] }}</i></p>
           <input type="checkbox" id="disabled_{{ plugin_name[0] }}" name="disabled_plugins"
             value="{{ plugin_name[0] }}">
