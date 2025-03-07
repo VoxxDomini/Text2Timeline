@@ -60,6 +60,7 @@ class ResultBuilder():
         result_model : ResultPageModel = self.build_from_ouput(output, render_list)
         return self.add_extras(result_model, output)
 
+
     # BATCHING DOES NOT SUPPORT DYNAMIC RENDER PAGES YET
     def build_with_batching(self, parser_input, selected_parser, parser_service, render_service, batch_size):
         start_time = time.perf_counter()

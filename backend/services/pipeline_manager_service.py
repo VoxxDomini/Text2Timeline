@@ -8,6 +8,7 @@ from backend.services.parserservice import ParserService
 from backend.services import plugin_service
 from backend.services.renderservice import RendererService
 from typing import List
+import time
 
 '''
 Will manage parser service, settings and plugins execution order
@@ -134,20 +135,21 @@ class PipelineManagerService:
         except:
             return None
 
+
     
 
 def get_plugin_information_model(pipeline_manager: PipelineManagerService):
     plugin_info = PluginInformationModel()
 
-    plugin_info.parsers = anti_ugly_wrapper(pipeline_manager.parser_service._custom_parsers, pipeline_manager)
-    plugin_info.gallery_extras = anti_ugly_wrapper(pipeline_manager._gallery_extras, pipeline_manager)
-    plugin_info.post_processors = anti_ugly_wrapper(pipeline_manager._post_processors, pipeline_manager)
-    plugin_info.pre_processors = anti_ugly_wrapper(pipeline_manager._pre_processors, pipeline_manager)
+    plugin_info.parsers =         map_plugin_names_to_info_tuple(pipeline_manager.parser_service._custom_parsers, pipeline_manager)
+    plugin_info.gallery_extras =  map_plugin_names_to_info_tuple(pipeline_manager._gallery_extras, pipeline_manager)
+    plugin_info.post_processors = map_plugin_names_to_info_tuple(pipeline_manager._post_processors, pipeline_manager)
+    plugin_info.pre_processors =  map_plugin_names_to_info_tuple(pipeline_manager._pre_processors, pipeline_manager)
 
     return plugin_info
 
 
-def anti_ugly_wrapper(storage_map: Dict, pipeline_manager):
+def map_plugin_names_to_info_tuple(storage_map: Dict, pipeline_manager):
     return list(map(lambda x: add_plugin_description_if_present(pipeline_manager, x), list(storage_map.keys())))
 
 def add_plugin_description_if_present(pipeline_manager: PipelineManagerService, plugin_name):
@@ -162,3 +164,21 @@ def add_plugin_description_if_present(pipeline_manager: PipelineManagerService, 
         pass
 
     return result
+
+
+# TODO find a less ugly way to track plugin time
+
+def log_execution_time(function): # ok currently not injecting
+    def wrapper(*args, **kwargs):
+        start_time = time.time()  
+        result = function(*args, **kwargs)  
+        end_time = time.time()  
+        execution_time = end_time - start_time  
+        t2t_logging.log_info(f"Execution time of {function.__name__}: {execution_time:.4f} seconds")
+        return result
+    return wrapper
+
+
+@log_execution_time
+def processor_wrapper(processor):
+    processor.process()

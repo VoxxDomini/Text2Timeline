@@ -16,7 +16,7 @@ class test_plugin_parser(BaseParser):
     '''
     @property
     def settings(self):
-        return self.settings
+        return self._settings
 
     @settings.setter
     def settings(self, settings: ParserSettings):

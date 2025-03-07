@@ -9,5 +9,5 @@ class example_preprocessor:
         pass
 
     def process(self, parser_input: ParserInput):
-        #parser_input._content = str.upper(parser_input._content)
+        parser_input._content = str.upper(parser_input._content)
         pass
